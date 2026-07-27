@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <img src="Docs/assets/main-window-current.png" width="760" alt="Актуальное окно MyNightMode на macOS">
+  <img src="Docs/showcase/hero.png" alt="MyNightMode on macOS">
 </p>
 
 ## Что делает
@@ -32,21 +32,26 @@
 ## Интерфейс
 
 <p align="center">
-  <img src="Docs/assets/interface-current.gif" width="760" alt="Реальные клики в MyNightMode: чтение, фокус и Smart Pause">
+  <img src="Docs/assets/interface-current.gif" width="520" alt="Реальное окно MyNightMode: переключение пресетов">
 </p>
 
-GIF показывает реальные клики в актуальной release-сборке: выбор пресетов «Чтение» и «Фокус», затем открытие Smart Pause.
+<p align="center">
+  <img src="Docs/assets/main-window-current.png" width="400" alt="Главное окно MyNightMode">
+  <img src="Docs/assets/main-window-focus.png" width="400" alt="MyNightMode с выбранным пресетом Фокус">
+</p>
+
+GIF собран из настоящих снимков актуальной release-сборки приложения — без макетов и декоративной довёрстки.
 
 ## Комфорт при чтении и работе
 
 <p align="center">
-  <img src="Docs/showcase/comfort-modes.gif" width="760" alt="Реальное переключение Paper Mode и Focus Edges">
+  <img src="Docs/showcase/comfort-modes.gif" alt="Paper Mode and Focus Edges demonstration">
 </p>
 
 ## Smart Pause
 
 <p align="center">
-  <img src="Docs/showcase/smart-pause.png" width="760" alt="Актуальное меню Smart Pause в MyNightMode">
+  <img src="Docs/showcase/smart-pause.png" alt="MyNightMode Smart Pause timer options">
 </p>
 
 ## Сборка
