@@ -1,6 +1,6 @@
 import Foundation
 
-enum UserMode: String, CaseIterable, Identifiable {
+enum UserMode: String, CaseIterable, Identifiable, Codable {
     case auto, work, read, night, play
 
     var id: String { rawValue }
@@ -26,7 +26,7 @@ enum UserMode: String, CaseIterable, Identifiable {
     }
 }
 
-enum QuickPreset: String, CaseIterable, Identifiable {
+enum QuickPreset: String, CaseIterable, Identifiable, Codable {
     case soft
     case reading
     case focus
@@ -89,6 +89,60 @@ enum QuickPreset: String, CaseIterable, Identifiable {
     var focusEdges: Bool {
         self == .focus
     }
+}
+
+struct DisplayConfiguration: Codable, Equatable {
+    var isEnabled: Bool
+    var preset: QuickPreset
+    var mode: UserMode
+    var intensity: Double
+    var paperMode: Bool
+    var focusEdges: Bool
+
+    init(
+        isEnabled: Bool = true,
+        preset: QuickPreset = .soft,
+        mode: UserMode? = nil,
+        intensity: Double = 0.34,
+        paperMode: Bool = true,
+        focusEdges: Bool = false
+    ) {
+        self.isEnabled = isEnabled
+        self.preset = preset
+        self.mode = mode ?? preset.mode
+        self.intensity = intensity
+        self.paperMode = paperMode
+        self.focusEdges = focusEdges
+    }
+
+    mutating func apply(_ preset: QuickPreset) {
+        self.preset = preset
+        mode = preset.mode
+        intensity = preset.intensity
+        paperMode = preset.paperMode
+        focusEdges = preset.focusEdges
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case isEnabled, preset, mode, intensity, paperMode, focusEdges
+    }
+
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        isEnabled = try values.decode(Bool.self, forKey: .isEnabled)
+        preset = try values.decode(QuickPreset.self, forKey: .preset)
+        mode = try values.decodeIfPresent(UserMode.self, forKey: .mode) ?? preset.mode
+        intensity = try values.decode(Double.self, forKey: .intensity)
+        paperMode = try values.decode(Bool.self, forKey: .paperMode)
+        focusEdges = try values.decode(Bool.self, forKey: .focusEdges)
+    }
+}
+
+struct DisplayInfo: Identifiable, Equatable {
+    let id: String
+    let name: String
+    let resolution: String
+    let isBuiltIn: Bool
 }
 
 enum ActiveProfile: String {

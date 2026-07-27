@@ -1,5 +1,6 @@
 import AppKit
 import Combine
+import CoreGraphics
 import CoreImage
 import QuartzCore
 
@@ -10,12 +11,13 @@ final class OverlayController: ObservableObject {
     @Published private(set) var displayBrightness: Double?
     @Published private(set) var activeAppName = "macOS"
     @Published private(set) var sessionMinutes: Int = 0
+    @Published private(set) var displays: [DisplayInfo] = []
 
     private let settings: SettingsStore
     private let brightnessReader = DisplayBrightnessReader()
     private let classifier = AppClassifier()
     private let adaptiveEngine = AdaptiveEngine()
-    private var panels: [PassiveOverlayPanel] = []
+    private var panels: [String: PassiveOverlayPanel] = [:]
     private var timer: Timer?
     private var subscriptions = Set<AnyCancellable>()
     private var observers: [NSObjectProtocol] = []
@@ -27,6 +29,12 @@ final class OverlayController: ObservableObject {
         Publishers.CombineLatest4(settings.$userMode, settings.$intensity, settings.$paperMode, settings.$focusEdges)
             .receive(on: RunLoop.main)
             .sink { [weak self] _, _, _, _ in self?.refreshNow() }
+            .store(in: &subscriptions)
+
+        settings.$displayConfigurations
+            .dropFirst()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.refreshNow() }
             .store(in: &subscriptions)
 
         observers.append(NSWorkspace.shared.notificationCenter.addObserver(
@@ -42,7 +50,10 @@ final class OverlayController: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            Task { @MainActor in self?.rebuildPanels() }
+            Task { @MainActor in
+                guard let self else { return }
+                self.isRunning ? self.rebuildPanels() : self.refreshDisplayList()
+            }
         })
 
         observers.append(NSWorkspace.shared.notificationCenter.addObserver(
@@ -60,6 +71,8 @@ final class OverlayController: ObservableObject {
         ) { [weak self] _ in
             Task { @MainActor in self?.refreshNow() }
         })
+
+        refreshDisplayList()
     }
 
     deinit {
@@ -87,7 +100,7 @@ final class OverlayController: ObservableObject {
     func stop() {
         timer?.invalidate()
         timer = nil
-        panels.forEach { $0.orderOut(nil); $0.close() }
+        panels.values.forEach { $0.orderOut(nil); $0.close() }
         panels.removeAll()
         isRunning = false
         sessionMinutes = 0
@@ -98,27 +111,33 @@ final class OverlayController: ObservableObject {
     }
 
     private func rebuildPanels() {
-        panels.forEach { $0.orderOut(nil); $0.close() }
-        panels = NSScreen.screens.map(makePanel)
+        panels.values.forEach { $0.orderOut(nil); $0.close() }
+        panels.removeAll()
+        refreshDisplayList()
+        for screen in NSScreen.screens {
+            panels[Self.identifier(for: screen)] = makePanel(for: screen)
+        }
         if isRunning {
-            panels.forEach { $0.orderFrontRegardless() }
             applyAppearance()
         }
     }
 
     private func hidePanels() {
-        panels.forEach { $0.orderOut(nil) }
+        panels.values.forEach { $0.orderOut(nil) }
     }
 
     private func makePanel(for screen: NSScreen) -> PassiveOverlayPanel {
         let panel = PassiveOverlayPanel(
-            contentRect: screen.frame,
+            contentRect: CGRect(origin: .zero, size: screen.frame.size),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false,
             screen: screen
         )
-        panel.level = .screenSaver
+        panel.setFrame(screen.frame, display: false)
+        // Stay above application windows without covering or changing the Dock,
+        // menu bar, notifications, or other system-owned UI.
+        panel.level = .floating
         panel.backgroundColor = .clear
         panel.isOpaque = false
         panel.hasShadow = false
@@ -130,7 +149,10 @@ final class OverlayController: ObservableObject {
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         panel.sharingType = .none
         panel.becomesKeyOnlyIfNeeded = false
-        panel.contentView = OverlayView(frame: CGRect(origin: .zero, size: screen.frame.size))
+        let overlayView = OverlayView(frame: panel.contentLayoutRect)
+        overlayView.autoresizingMask = [.width, .height]
+        panel.contentView = overlayView
+        panel.setFrame(screen.frame, display: false)
         return panel
     }
 
@@ -153,34 +175,82 @@ final class OverlayController: ObservableObject {
 
     private func applyAppearance() {
         guard isRunning else { return }
-        let appearance = adaptiveEngine.appearance(
-            profile: activeProfile,
-            intensity: settings.intensity,
-            displayBrightness: displayBrightness,
-            sessionMinutes: Double(sessionMinutes),
-            paperEnabled: settings.paperMode,
-            focusEdgesEnabled: settings.focusEdges,
-            hour: Calendar.current.component(.hour, from: Date())
-        )
+        let app = NSWorkspace.shared.frontmostApplication
+        for (displayID, panel) in panels {
+            let configuration = settings.displayConfiguration(for: displayID)
+            guard configuration.isEnabled else {
+                panel.orderOut(nil)
+                continue
+            }
 
-        let color = NSColor(
-            calibratedRed: appearance.red,
-            green: appearance.green,
-            blue: appearance.blue,
-            alpha: 1.0
-        )
+            let profile = profile(for: configuration.mode, app: app)
+            let appearance = adaptiveEngine.appearance(
+                profile: profile,
+                intensity: configuration.intensity,
+                displayBrightness: displayBrightness,
+                sessionMinutes: Double(sessionMinutes),
+                paperEnabled: configuration.paperMode,
+                focusEdgesEnabled: configuration.focusEdges,
+                hour: Calendar.current.component(.hour, from: Date())
+            )
+            let color = NSColor(
+                calibratedRed: appearance.red,
+                green: appearance.green,
+                blue: appearance.blue,
+                alpha: 1.0
+            )
 
-        for panel in panels {
             guard let view = panel.contentView as? OverlayView else { continue }
             view.apply(color: color, alpha: appearance.alpha, paperOpacity: appearance.paperOpacity, edgeOpacity: appearance.edgeOpacity)
             if !panel.isVisible { panel.orderFrontRegardless() }
         }
+    }
+
+    private func refreshDisplayList() {
+        displays = NSScreen.screens.map { screen in
+            let scale = screen.backingScaleFactor
+            let width = Int(screen.frame.width * scale)
+            let height = Int(screen.frame.height * scale)
+            let displayID = Self.displayID(for: screen)
+            return DisplayInfo(
+                id: Self.identifier(for: screen),
+                name: screen.localizedName,
+                resolution: "\(width) × \(height)",
+                isBuiltIn: displayID.map(CGDisplayIsBuiltin) == 1
+            )
+        }
+    }
+
+    private func profile(for mode: UserMode, app: NSRunningApplication?) -> ActiveProfile {
+        switch mode {
+        case .auto: return classifier.profile(for: app)
+        case .work: return .work
+        case .read: return .reading
+        case .night: return .night
+        case .play: return .gaming
+        }
+    }
+
+    private static func displayID(for screen: NSScreen) -> CGDirectDisplayID? {
+        screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID
+    }
+
+    private static func identifier(for screen: NSScreen) -> String {
+        guard let displayID = displayID(for: screen),
+              let uuid = CGDisplayCreateUUIDFromDisplayID(displayID)?.takeRetainedValue() else {
+            return "screen-\(screen.localizedName)-\(Int(screen.frame.origin.x))-\(Int(screen.frame.origin.y))"
+        }
+        return CFUUIDCreateString(nil, uuid) as String
     }
 }
 
 private final class PassiveOverlayPanel: NSPanel {
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
+
+    override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect {
+        frameRect
+    }
 }
 
 private final class OverlayView: NSView {
@@ -221,6 +291,13 @@ private final class OverlayView: NSView {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layout() {
+        super.layout()
+        tintLayer.frame = bounds
+        paperLayer.frame = bounds
+        edgeLayer.frame = bounds
     }
 
     func apply(color: NSColor, alpha: Double, paperOpacity: Double, edgeOpacity: Double) {

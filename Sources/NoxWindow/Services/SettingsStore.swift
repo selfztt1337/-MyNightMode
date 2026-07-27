@@ -10,6 +10,9 @@ final class SettingsStore: ObservableObject {
     @Published var focusEdges: Bool { didSet { defaults.set(focusEdges, forKey: Keys.focusEdges) } }
     @Published var breakReminders: Bool { didSet { defaults.set(breakReminders, forKey: Keys.breakReminders) } }
     @Published var breakIntervalMinutes: Int { didSet { defaults.set(breakIntervalMinutes, forKey: Keys.breakIntervalMinutes) } }
+    @Published private(set) var displayConfigurations: [String: DisplayConfiguration] {
+        didSet { saveDisplayConfigurations() }
+    }
 
     private let defaults = UserDefaults.standard
 
@@ -21,6 +24,7 @@ final class SettingsStore: ObservableObject {
         static let focusEdges = "focusEdges.v9"
         static let breakReminders = "breakReminders.v9"
         static let breakIntervalMinutes = "breakIntervalMinutes.v10.1"
+        static let displayConfigurations = "displayConfigurations.v11.3"
     }
 
     init() {
@@ -31,6 +35,36 @@ final class SettingsStore: ObservableObject {
         focusEdges = defaults.object(forKey: Keys.focusEdges) as? Bool ?? true
         breakReminders = defaults.object(forKey: Keys.breakReminders) as? Bool ?? true
         breakIntervalMinutes = defaults.object(forKey: Keys.breakIntervalMinutes) as? Int ?? 50
+        if let data = defaults.data(forKey: Keys.displayConfigurations),
+           let saved = try? JSONDecoder().decode([String: DisplayConfiguration].self, from: data) {
+            displayConfigurations = saved
+        } else {
+            displayConfigurations = [:]
+        }
+    }
+
+    func displayConfiguration(for displayID: String) -> DisplayConfiguration {
+        displayConfigurations[displayID] ?? DisplayConfiguration(
+            isEnabled: true,
+            preset: matchingPreset,
+            mode: userMode,
+            intensity: intensity,
+            paperMode: paperMode,
+            focusEdges: focusEdges
+        )
+    }
+
+    func updateDisplayConfiguration(
+        for displayID: String,
+        _ update: (inout DisplayConfiguration) -> Void
+    ) {
+        var configuration = displayConfiguration(for: displayID)
+        update(&configuration)
+        displayConfigurations[displayID] = configuration
+    }
+
+    func removeConfiguration(for displayID: String) {
+        displayConfigurations.removeValue(forKey: displayID)
     }
 
     func reset() {
@@ -41,5 +75,20 @@ final class SettingsStore: ObservableObject {
         focusEdges = true
         breakReminders = true
         breakIntervalMinutes = 50
+        displayConfigurations = [:]
+    }
+
+    private var matchingPreset: QuickPreset {
+        QuickPreset.allCases.first {
+            $0.mode == userMode &&
+            abs($0.intensity - intensity) < 0.001 &&
+            $0.paperMode == paperMode &&
+            $0.focusEdges == focusEdges
+        } ?? .soft
+    }
+
+    private func saveDisplayConfigurations() {
+        guard let data = try? JSONEncoder().encode(displayConfigurations) else { return }
+        defaults.set(data, forKey: Keys.displayConfigurations)
     }
 }

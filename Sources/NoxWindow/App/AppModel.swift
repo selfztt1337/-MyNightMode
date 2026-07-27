@@ -16,6 +16,7 @@ final class AppModel: ObservableObject {
     var isEnabled: Bool { overlay.isRunning }
     var activeProfile: ActiveProfile { overlay.activeProfile }
     var activeAppName: String { overlay.activeAppName }
+    var displays: [DisplayInfo] { overlay.displays }
     var sessionMinutes: Int { overlay.sessionMinutes }
     var sessionText: String {
         overlay.sessionMinutes < 1 ? "только что" : "\(overlay.sessionMinutes) мин"
@@ -103,8 +104,61 @@ final class AppModel: ObservableObject {
         settings.intensity = preset.intensity
         settings.paperMode = preset.paperMode
         settings.focusEdges = preset.focusEdges
+        for display in displays {
+            settings.updateDisplayConfiguration(for: display.id) {
+                $0.apply(preset)
+            }
+        }
         if enableProtection && !isEnabled {
             resumeNow()
+        }
+    }
+
+    func displayConfiguration(for displayID: String) -> DisplayConfiguration {
+        settings.displayConfiguration(for: displayID)
+    }
+
+    func updateDisplayConfiguration(
+        for displayID: String,
+        _ update: (inout DisplayConfiguration) -> Void
+    ) {
+        settings.updateDisplayConfiguration(for: displayID, update)
+    }
+
+    func apply(_ preset: QuickPreset, to displayID: String, enableProtection: Bool = true) {
+        settings.updateDisplayConfiguration(for: displayID) {
+            $0.apply(preset)
+        }
+        if enableProtection && !isEnabled {
+            resumeNow()
+        }
+    }
+
+    func setModeForAllDisplays(_ mode: UserMode) {
+        settings.userMode = mode
+        for display in displays {
+            settings.updateDisplayConfiguration(for: display.id) { $0.mode = mode }
+        }
+    }
+
+    func setIntensityForAllDisplays(_ intensity: Double) {
+        settings.intensity = intensity
+        for display in displays {
+            settings.updateDisplayConfiguration(for: display.id) { $0.intensity = intensity }
+        }
+    }
+
+    func setPaperModeForAllDisplays(_ enabled: Bool) {
+        settings.paperMode = enabled
+        for display in displays {
+            settings.updateDisplayConfiguration(for: display.id) { $0.paperMode = enabled }
+        }
+    }
+
+    func setFocusEdgesForAllDisplays(_ enabled: Bool) {
+        settings.focusEdges = enabled
+        for display in displays {
+            settings.updateDisplayConfiguration(for: display.id) { $0.focusEdges = enabled }
         }
     }
 

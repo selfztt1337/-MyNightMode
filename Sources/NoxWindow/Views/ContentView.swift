@@ -6,6 +6,7 @@ struct ContentView: View {
     @State private var showOnboarding = false
     @State private var visibleHelp: DashboardHelp?
     @State private var showAIReason = false
+    @State private var selectedDisplayID: String?
 
     var body: some View {
         Group {
@@ -27,12 +28,15 @@ struct ContentView: View {
             .environmentObject(model)
             .frame(width: 520, height: 590)
         }
+        .onAppear { selectAvailableDisplay() }
+        .onChange(of: model.displays) { selectAvailableDisplay() }
     }
 
     private var dashboard: some View {
         VStack(spacing: 16) {
             header
             statusCard
+            displaySelector
             modeSection
             quickPresetsSection
             intensityCard
@@ -48,6 +52,30 @@ struct ContentView: View {
         }
         .padding(24)
         .animation(.easeInOut(duration: 0.22), value: model.shouldSuggestBreak)
+    }
+
+    private var displaySelector: some View {
+        HStack(spacing: 12) {
+            Label("Дисплей", systemImage: selectedDisplay?.isBuiltIn == true ? "laptopcomputer" : "display")
+                .font(.callout.weight(.semibold))
+
+            Picker("Дисплей", selection: selectedDisplayBinding) {
+                ForEach(model.displays) { display in
+                    Text(display.name).tag(Optional(display.id))
+                }
+            }
+            .labelsHidden()
+            .frame(maxWidth: .infinity)
+
+            Toggle("Эффект", isOn: displayBoolBinding(\.isEnabled))
+                .labelsHidden()
+                .toggleStyle(.switch)
+                .disabled(selectedDisplay == nil)
+                .help("Включить эффект на выбранном дисплее")
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
     private var header: some View {
@@ -102,7 +130,7 @@ struct ContentView: View {
 
             Spacer(minLength: 8)
 
-            if model.settings.userMode == .auto {
+            if selectedConfiguration?.mode == .auto {
                 Button {
                     showAIReason.toggle()
                 } label: {
@@ -121,7 +149,7 @@ struct ContentView: View {
                     AIReasonView(model: model)
                 }
             } else {
-                Text(model.settings.userMode.title)
+                Text((selectedConfiguration?.mode ?? model.settings.userMode).title)
                     .font(.caption.weight(.semibold))
                     .padding(.horizontal, 9)
                     .padding(.vertical, 5)
@@ -153,7 +181,8 @@ struct ContentView: View {
             HStack(spacing: 7) {
                 ForEach(UserMode.allCases) { mode in
                     Button {
-                        model.settings.userMode = mode
+                        guard let displayID = selectedDisplay?.id else { return }
+                        model.updateDisplayConfiguration(for: displayID) { $0.mode = mode }
                     } label: {
                         VStack(spacing: 5) {
                             Image(systemName: mode.symbol)
@@ -167,10 +196,10 @@ struct ContentView: View {
                     }
                     .buttonStyle(.plain)
                     .background(
-                        model.settings.userMode == mode ? Color.accentColor : Color.white.opacity(0.06),
+                        selectedConfiguration?.mode == mode ? Color.accentColor : Color.white.opacity(0.06),
                         in: RoundedRectangle(cornerRadius: 10, style: .continuous)
                     )
-                    .foregroundStyle(model.settings.userMode == mode ? Color.white : Color.primary)
+                    .foregroundStyle(selectedConfiguration?.mode == mode ? Color.white : Color.primary)
                     .help(modeHelp(mode))
                 }
             }
@@ -184,7 +213,7 @@ struct ContentView: View {
                     .font(.callout.weight(.medium))
                 InfoButton(help: .intensity, visibleHelp: $visibleHelp)
                 Spacer()
-                Text("\(Int(model.settings.intensity * 100))%")
+                Text("\(Int(selectedIntensity * 100))%")
                     .font(.callout.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
@@ -193,9 +222,13 @@ struct ContentView: View {
                 Image(systemName: "sun.min")
                     .foregroundStyle(.secondary)
                 Slider(value: Binding(
-                    get: { model.settings.intensity },
-                    set: { model.settings.intensity = $0 }
+                    get: { selectedIntensity },
+                    set: { value in
+                        guard let displayID = selectedDisplay?.id else { return }
+                        model.updateDisplayConfiguration(for: displayID) { $0.intensity = value }
+                    }
                 ), in: 0.10...1.0)
+                .disabled(selectedConfiguration?.isEnabled == false)
                 Image(systemName: "sun.max.fill")
                     .foregroundStyle(.secondary)
             }
@@ -217,7 +250,8 @@ struct ContentView: View {
             HStack(spacing: 7) {
                 ForEach(QuickPreset.allCases) { preset in
                     Button {
-                        model.apply(preset)
+                        guard let displayID = selectedDisplay?.id else { return }
+                        model.apply(preset, to: displayID)
                     } label: {
                         VStack(spacing: 5) {
                             Image(systemName: preset.symbol)
@@ -258,13 +292,24 @@ struct ContentView: View {
                 Button("На 15 минут") { model.pause(for: 15) }
                 Button("На 30 минут") { model.pause(for: 30) }
                 Button("На 1 час") { model.pause(for: 60) }
+                Button("На 2 часа") { model.pause(for: 120) }
+                Divider()
+                Button("До завтра, 09:00") { model.pause(for: minutesUntilTomorrowMorning()) }
             } label: {
-                Image(systemName: "timer")
-                    .frame(width: 34, height: 34)
+                HStack(spacing: 5) {
+                    Image(systemName: "timer")
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 9, weight: .bold))
+                }
+                .font(.system(size: 15, weight: .semibold))
+                .frame(width: 52, height: 38)
+                .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
             }
             .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
             .help("Временно выключить эффект и включить его автоматически")
-            .disabled(!model.isEnabled)
+            .disabled(!model.isEnabled && !model.isTemporarilyPaused)
         }
     }
 
@@ -278,8 +323,11 @@ struct ContentView: View {
                     subtitle: "Мягче белые страницы",
                     symbol: "doc.text",
                     value: Binding(
-                        get: { model.settings.paperMode },
-                        set: { model.settings.paperMode = $0 }
+                        get: { selectedConfiguration?.paperMode ?? false },
+                        set: { value in
+                            guard let displayID = selectedDisplay?.id else { return }
+                            model.updateDisplayConfiguration(for: displayID) { $0.paperMode = value }
+                        }
                     ),
                     help: .paper
                 )
@@ -289,8 +337,11 @@ struct ContentView: View {
                     subtitle: "Меньше отвлечений",
                     symbol: "scope",
                     value: Binding(
-                        get: { model.settings.focusEdges },
-                        set: { model.settings.focusEdges = $0 }
+                        get: { selectedConfiguration?.focusEdges ?? false },
+                        set: { value in
+                            guard let displayID = selectedDisplay?.id else { return }
+                            model.updateDisplayConfiguration(for: displayID) { $0.focusEdges = value }
+                        }
                     ),
                     help: .focus
                 )
@@ -340,6 +391,56 @@ struct ContentView: View {
         }
         .font(.callout)
         .padding(.top, 2)
+    }
+
+    private var selectedDisplay: DisplayInfo? {
+        model.displays.first { $0.id == selectedDisplayID } ?? model.displays.first
+    }
+
+    private var selectedConfiguration: DisplayConfiguration? {
+        guard let displayID = selectedDisplay?.id else { return nil }
+        return model.displayConfiguration(for: displayID)
+    }
+
+    private var selectedIntensity: Double {
+        selectedConfiguration?.intensity ?? model.settings.intensity
+    }
+
+    private var selectedDisplayBinding: Binding<String?> {
+        Binding(
+            get: { selectedDisplay?.id },
+            set: { selectedDisplayID = $0 }
+        )
+    }
+
+    private func displayBoolBinding(
+        _ keyPath: WritableKeyPath<DisplayConfiguration, Bool>
+    ) -> Binding<Bool> {
+        Binding(
+            get: { selectedConfiguration?[keyPath: keyPath] ?? false },
+            set: { value in
+                guard let displayID = selectedDisplay?.id else { return }
+                model.updateDisplayConfiguration(for: displayID) { $0[keyPath: keyPath] = value }
+            }
+        )
+    }
+
+    private func selectAvailableDisplay() {
+        guard !model.displays.isEmpty else {
+            selectedDisplayID = nil
+            return
+        }
+        if !model.displays.contains(where: { $0.id == selectedDisplayID }) {
+            selectedDisplayID = model.displays.first?.id
+        }
+    }
+
+    private func minutesUntilTomorrowMorning() -> Int {
+        let calendar = Calendar.current
+        let now = Date()
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: now) ?? now.addingTimeInterval(86_400)
+        let target = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: tomorrow) ?? tomorrow
+        return max(1, Int(ceil(target.timeIntervalSince(now) / 60)))
     }
 
     private func featureCard(
