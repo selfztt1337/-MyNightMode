@@ -85,17 +85,10 @@ struct MenuBarView: View {
             }
 
             HStack(spacing: 7) {
-                presetButton("Мягко", symbol: "moon.stars") {
-                    applyPreset(mode: .auto, intensity: 0.34, paper: true, focus: false)
-                }
-                presetButton("Чтение", symbol: "book") {
-                    applyPreset(mode: .read, intensity: 0.46, paper: true, focus: false)
-                }
-                presetButton("Фокус", symbol: "scope") {
-                    applyPreset(mode: .work, intensity: 0.52, paper: false, focus: true)
-                }
-                presetButton("Цвет", symbol: "paintpalette") {
-                    applyPreset(mode: .play, intensity: 0.18, paper: false, focus: false)
+                ForEach(QuickPreset.allCases) { preset in
+                    presetButton(preset.title, symbol: preset.symbol) {
+                        model.apply(preset)
+                    }
                 }
             }
         }
@@ -326,14 +319,6 @@ struct MenuBarView: View {
         .buttonStyle(.plain)
         .background(.primary.opacity(0.055), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
         .help("Применить готовый набор настроек")
-    }
-
-    private func applyPreset(mode: UserMode, intensity: Double, paper: Bool, focus: Bool) {
-        model.settings.userMode = mode
-        model.settings.intensity = intensity
-        model.settings.paperMode = paper
-        model.settings.focusEdges = focus
-        if !model.isEnabled { model.resumeNow() }
     }
 
     private func minutesUntilTomorrowMorning() -> Int {

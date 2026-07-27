@@ -98,6 +98,16 @@ final class AppModel: ObservableObject {
         objectWillChange.send()
     }
 
+    func apply(_ preset: QuickPreset, enableProtection: Bool = true) {
+        settings.userMode = preset.mode
+        settings.intensity = preset.intensity
+        settings.paperMode = preset.paperMode
+        settings.focusEdges = preset.focusEdges
+        if enableProtection && !isEnabled {
+            resumeNow()
+        }
+    }
+
     func dismissBreakSuggestion() {
         breakDismissedForSession = true
     }

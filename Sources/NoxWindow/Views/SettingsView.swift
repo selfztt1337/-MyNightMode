@@ -114,10 +114,9 @@ struct SettingsView: View {
     private var presetsSection: some View {
         settingsCard(title: "Быстрые пресеты", symbol: "sparkles") {
             LazyVGrid(columns: columns, spacing: 10) {
-                presetSettingsButton("Мягкий вечер", symbol: "moon.stars", mode: .auto, intensity: 0.34, paper: true, focus: false)
-                presetSettingsButton("Долгое чтение", symbol: "book", mode: .read, intensity: 0.46, paper: true, focus: false)
-                presetSettingsButton("Глубокий фокус", symbol: "scope", mode: .work, intensity: 0.52, paper: false, focus: true)
-                presetSettingsButton("Точный цвет", symbol: "paintpalette", mode: .play, intensity: 0.18, paper: false, focus: false)
+                ForEach(QuickPreset.allCases) { preset in
+                    presetSettingsButton(preset)
+                }
             }
 
             Text("Пресет меняет режим, силу эффекта, Paper Mode и фокус по краям. Любую настройку можно скорректировать вручную.")
@@ -196,24 +195,14 @@ struct SettingsView: View {
         }
     }
 
-    private func presetSettingsButton(
-        _ title: String,
-        symbol: String,
-        mode: UserMode,
-        intensity: Double,
-        paper: Bool,
-        focus: Bool
-    ) -> some View {
+    private func presetSettingsButton(_ preset: QuickPreset) -> some View {
         Button {
-            model.settings.userMode = mode
-            model.settings.intensity = intensity
-            model.settings.paperMode = paper
-            model.settings.focusEdges = focus
+            model.apply(preset, enableProtection: false)
         } label: {
             HStack(spacing: 9) {
-                Image(systemName: symbol)
+                Image(systemName: preset.symbol)
                     .frame(width: 18)
-                Text(title)
+                Text(preset.settingsTitle)
                     .lineLimit(1)
                 Spacer(minLength: 0)
             }

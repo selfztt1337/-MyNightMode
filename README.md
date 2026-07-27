@@ -43,7 +43,7 @@
 ## Smart Pause
 
 <p align="center">
-  <img src="Docs/showcase/smart-pause.gif" alt="Smart Pause timer demonstration">
+  <img src="Docs/showcase/smart-pause.png" alt="MyNightMode Smart Pause timer options">
 </p>
 
 ## Сборка

@@ -17,7 +17,7 @@ struct ContentView: View {
                 }
             }
         }
-        .frame(minWidth: 520, maxWidth: 520, minHeight: 590)
+        .frame(minWidth: 520, maxWidth: 520, minHeight: 690)
         .background(Color(nsColor: .windowBackgroundColor))
         .sheet(isPresented: $showOnboarding) {
             OnboardingView {
@@ -34,6 +34,7 @@ struct ContentView: View {
             header
             statusCard
             modeSection
+            quickPresetsSection
             intensityCard
 
             if model.shouldSuggestBreak {
@@ -135,7 +136,7 @@ struct ContentView: View {
         if model.isEnabled {
             return "\(model.activeAppName) · яркость \(model.brightnessText) · \(model.sessionText)"
         }
-        if let pause = model.pauseStatusText {
+        if model.pauseStatusText != nil {
             return "После паузы защита включится автоматически"
         }
         return "Включи защиту, дальше приложение работает само"
@@ -201,6 +202,40 @@ struct ContentView: View {
         }
         .padding(14)
         .background(.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    private var quickPresetsSection: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            HStack {
+                sectionTitle("Быстрые пресеты")
+                Spacer()
+                Text("1 клик")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+
+            HStack(spacing: 7) {
+                ForEach(QuickPreset.allCases) { preset in
+                    Button {
+                        model.apply(preset)
+                    } label: {
+                        VStack(spacing: 5) {
+                            Image(systemName: preset.symbol)
+                                .font(.system(size: 14, weight: .medium))
+                            Text(preset.title)
+                                .font(.caption.weight(.medium))
+                                .lineLimit(1)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 9)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .background(.white.opacity(0.055), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .help("Применить пресет «\(preset.settingsTitle)»")
+                }
+            }
+        }
     }
 
     private var protectionControls: some View {

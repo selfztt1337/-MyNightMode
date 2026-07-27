@@ -26,6 +26,71 @@ enum UserMode: String, CaseIterable, Identifiable {
     }
 }
 
+enum QuickPreset: String, CaseIterable, Identifiable {
+    case soft
+    case reading
+    case focus
+    case color
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .soft: return "Мягко"
+        case .reading: return "Чтение"
+        case .focus: return "Фокус"
+        case .color: return "Цвет"
+        }
+    }
+
+    var settingsTitle: String {
+        switch self {
+        case .soft: return "Мягкий вечер"
+        case .reading: return "Долгое чтение"
+        case .focus: return "Глубокий фокус"
+        case .color: return "Точный цвет"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .soft: return "moon.stars"
+        case .reading: return "book"
+        case .focus: return "scope"
+        case .color: return "paintpalette"
+        }
+    }
+
+    var mode: UserMode {
+        switch self {
+        case .soft: return .auto
+        case .reading: return .read
+        case .focus: return .work
+        case .color: return .play
+        }
+    }
+
+    var intensity: Double {
+        switch self {
+        case .soft: return 0.34
+        case .reading: return 0.46
+        case .focus: return 0.52
+        case .color: return 0.18
+        }
+    }
+
+    var paperMode: Bool {
+        switch self {
+        case .soft, .reading: return true
+        case .focus, .color: return false
+        }
+    }
+
+    var focusEdges: Bool {
+        self == .focus
+    }
+}
+
 enum ActiveProfile: String {
     case whiteboard = "Доска"
     case coding = "Код"
