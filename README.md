@@ -1,100 +1,100 @@
 <p align="center">
-  <img src="Resources/AppIcon1024.png" width="104" alt="MyNightMode icon">
+  <img src="Resources/AppIcon1024.png" width="110" alt="MyNightMode icon">
 </p>
 
 <h1 align="center">MyNightMode</h1>
 
 <p align="center">
-  <strong>Умный ночной режим для macOS, который подстраивает экран под то, чем вы занимаетесь.</strong><br>
-  Меньше бликов и визуального шума. Больше комфорта при долгой работе вечером и ночью.
+  <strong>🌙 Спокойный экран для долгой работы вечером и ночью.</strong><br>
+  AI Auto сам выбирает профиль, Paper Mode смягчает белый фон, а Focus Edges убирает визуальный шум по краям.
 </p>
 
 <p align="center">
-  <img alt="macOS 14+" src="https://img.shields.io/badge/macOS-14%2B-111111?style=flat-square&logo=apple&logoColor=white">
-  <img alt="Swift 5.10" src="https://img.shields.io/badge/Swift-5.10-F05138?style=flat-square&logo=swift&logoColor=white">
-  <img alt="Local first" src="https://img.shields.io/badge/Local--first-100%25-22c55e?style=flat-square">
-  <img alt="No Screen Recording" src="https://img.shields.io/badge/Screen_Recording-not_required-6366f1?style=flat-square">
+  <img alt="macOS 14+" src="https://img.shields.io/badge/macOS-14%2B-111111?style=for-the-badge&logo=apple&logoColor=white">
+  <img alt="Swift" src="https://img.shields.io/badge/Swift-native-F05138?style=for-the-badge&logo=swift&logoColor=white">
+  <img alt="Local-first" src="https://img.shields.io/badge/Local--first-100%25-22C55E?style=for-the-badge">
+  <img alt="Privacy" src="https://img.shields.io/badge/Screen_Recording-not_required-8B5CF6?style=for-the-badge">
 </p>
 
 <p align="center">
-  <img src="Docs/assets/app-preview.png" width="100%" alt="MyNightMode running on macOS">
+  <img src="Docs/assets/hero-current.png" width="100%" alt="MyNightMode on macOS">
 </p>
 
-## Экран становится комфортнее сам
+## ✨ Установил → включил AI → забыл
 
-MyNightMode отслеживает только **активное приложение, время суток, яркость дисплея и длительность сеанса**. На основе этого приложение локально выбирает профиль и регулирует силу эффекта.
+MyNightMode работает поверх macOS и мягко адаптирует экран под то, чем вы занимаетесь.
 
-| Когда вы… | MyNightMode… |
-| --- | --- |
-| пишете код | сохраняет читаемость текста и снижает яркость фона |
-| читаете статью или PDF | смягчает белые поверхности с помощью **Paper Mode** |
-| работаете в Miro или FigJam | затемняет края через **Focus Edges**, удерживая внимание в центре |
-| редактируете фото или видео | почти отключает эффект, чтобы не искажать цвет |
-| запускаете игру или фильм | минимально вмешивается в изображение |
+- 💻 **Код и работа** — снижает резкость яркого фона, не портя читаемость.
+- 📚 **Чтение** — Paper Mode делает PDF, сайты и документы визуально мягче.
+- 🎯 **Фокус** — Focus Edges незаметно затемняет периферию экрана.
+- 🎨 **Фото и видео** — уменьшает вмешательство, когда важна точность цвета.
+- 🎬 **Игры и фильмы** — почти отключает эффект, чтобы не мешать контенту.
 
-## Главное
+## 🎬 Как это выглядит
 
-- **AI Auto** — выбирает подходящий профиль без ручного переключения.
-- **Paper Mode** — делает белые интерфейсы мягче и уменьшает ощущение глянца.
-- **Focus Edges** — незаметно затемняет периферию экрана и снижает визуальный шум.
-- **Adaptive Overlay** — работает на всех дисплеях и Spaces.
-- **Smart Pause** — временно отключает эффект и автоматически возвращает его позже.
-- **Menu Bar Control** — быстрый доступ к режимам, силе эффекта и пояснениям.
-- **Privacy by design** — всё работает локально, без Screen Recording и Accessibility.
-
-<details>
-<summary><strong>Как выглядят Paper Mode и Focus Edges в интерфейсе</strong></summary>
-<br>
 <p align="center">
-  <img src="Docs/assets/app-interface.jpg" width="900" alt="MyNightMode controls and feature explanations">
+  <img src="Docs/assets/demo-current.gif" width="100%" alt="MyNightMode feature demo">
 </p>
-</details>
 
-## Быстрый старт
+## 🚀 Главные фичи
 
-### Требования
+| | Функция | Что даёт |
+|---|---|---|
+| ✨ | **AI Auto** | Сам выбирает режим по активному приложению, времени, яркости и длительности сессии |
+| 📄 | **Paper Mode** | Смягчает белые поверхности и снижает ощущение глянца |
+| 🎯 | **Focus Edges** | Затемняет края и помогает удерживать внимание в центре |
+| ⚡ | **Menu Bar Control** | Все режимы, сила эффекта, пауза и пояснения в одном компактном окне |
+| ⏸️ | **Smart Pause** | Отключает эффект на 15, 30 или 60 минут и включает обратно автоматически |
+| 🖥️ | **Multi-display** | Работает на нескольких дисплеях и в разных Spaces |
+| 🔒 | **Local-first** | Не записывает экран, не читает содержимое окон и не отправляет данные в облако |
 
-- macOS 14 или новее
-- Xcode Command Line Tools
+## 🖼️ Актуальный интерфейс
 
-### Сборка
+<p align="center">
+  <img src="Docs/assets/app-current.jpg" width="100%" alt="Current MyNightMode interface">
+</p>
+
+## 🛠️ Быстрый запуск
+
+**Требования:** macOS 14+ и Xcode Command Line Tools.
 
 ```bash
 chmod +x scripts/*.sh
 ./scripts/build_app.sh
 ```
 
-Готовое приложение появится здесь:
+Готовое приложение:
 
 ```text
 dist/MyNightMode.app
 ```
 
-Запуск из проекта:
+Запустить из проекта:
 
 ```bash
 ./scripts/run_app.sh
 ```
 
-## Управление
+## ⌨️ Управление
 
 - Иконка в menu bar — открыть быстрые настройки
 - `⌥⌘D` — включить или отключить эффект
-- `?` и кнопки `ⓘ` — открыть встроенные пояснения и обучение
+- `?` и `ⓘ` — открыть пояснения и обучение
+- **Smart Pause** — временно выключить эффект без потери настроек
 
-## Приватность
+## 🔒 Приватность без звёздочек
 
-MyNightMode не записывает экран, не читает его содержимое и не отправляет данные во внешние сервисы. Для работы используются только системные данные о текущем приложении и локальные настройки.
+MyNightMode не делает скриншоты, не записывает экран, не требует Accessibility и не отправляет данные во внешние сервисы. Всё работает локально на Mac.
 
-## Статус проекта
+## 🧪 Статус
 
-MyNightMode находится в активной разработке. Перед первым использованием соберите приложение на своём Mac и проверьте поведение на вашей версии macOS и конфигурации дисплеев.
+Проект находится в активной разработке. Сборка рассчитана на macOS 14+.
 
-## Лицензия
+## 📄 Лицензия
 
-Разрешено личное некоммерческое использование и модификация. Условия распространения и коммерческого использования описаны в [`LICENSE.txt`](LICENSE.txt).
+Личное некоммерческое использование и модификация разрешены. Детали: [`LICENSE.txt`](LICENSE.txt).
 
 <p align="center">
-  Made for calmer nights on macOS.<br>
-  <strong>@selfztt1337</strong>
+  <strong>Made for calmer nights on macOS 🌙</strong><br>
+  <sub>@selfztt1337</sub>
 </p>
