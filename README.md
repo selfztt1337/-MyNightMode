@@ -1,52 +1,100 @@
-# MyNightMode 4.0
+<p align="center">
+  <img src="Resources/AppIcon1024.png" width="104" alt="MyNightMode icon">
+</p>
 
-Минималистичный адаптивный ночной режим для macOS, созданный для долгой работы вечером и ночью.
+<h1 align="center">MyNightMode</h1>
 
-## Что делает приложение
+<p align="center">
+  <strong>Умный ночной режим для macOS, который подстраивает экран под то, чем вы занимаетесь.</strong><br>
+  Меньше бликов и визуального шума. Больше комфорта при долгой работе вечером и ночью.
+</p>
 
-MyNightMode не просто накладывает один фильтр. Оно определяет активное приложение и автоматически выбирает подходящий профиль:
+<p align="center">
+  <img alt="macOS 14+" src="https://img.shields.io/badge/macOS-14%2B-111111?style=flat-square&logo=apple&logoColor=white">
+  <img alt="Swift 5.10" src="https://img.shields.io/badge/Swift-5.10-F05138?style=flat-square&logo=swift&logoColor=white">
+  <img alt="Local first" src="https://img.shields.io/badge/Local--first-100%25-22c55e?style=flat-square">
+  <img alt="No Screen Recording" src="https://img.shields.io/badge/Screen_Recording-not_required-6366f1?style=flat-square">
+</p>
 
-- **Код** — VS Code, Cursor, Xcode, Terminal.
-- **Доска** — Miro, FigJam, Freeform, Whimsical.
-- **Чтение** — Safari, Arc, Chrome, Preview, Kindle.
-- **Работа** — Notion, Slack, Jira, Mail, Office.
-- **Цвет** — Photoshop, Lightroom, DaVinci и другие цветокритичные приложения.
-- **Видео и игры** — эффект автоматически снижается почти до нуля.
+<p align="center">
+  <img src="Docs/assets/app-preview.png" width="100%" alt="MyNightMode running on macOS">
+</p>
 
-Дополнительно учитываются время суток, яркость встроенного дисплея и длительность текущего сеанса.
+## Экран становится комфортнее сам
 
-## Главные функции версии 4.0
+MyNightMode отслеживает только **активное приложение, время суток, яркость дисплея и длительность сеанса**. На основе этого приложение локально выбирает профиль и регулирует силу эффекта.
 
-- AI Auto без ручного переключения.
-- Adaptive Overlay на всех дисплеях и Spaces.
-- Paper Mode для более мягкого чтения.
-- Focus Edges для снижения визуального шума по краям.
-- Ненавязчивый перерыв после 50 минут без уведомлений и разрешений.
-- Быстрое управление из menu bar.
-- Горячая клавиша `⌥⌘D`.
-- Полностью локальная работа.
-- Не требует Screen Recording и Accessibility.
+| Когда вы… | MyNightMode… |
+| --- | --- |
+| пишете код | сохраняет читаемость текста и снижает яркость фона |
+| читаете статью или PDF | смягчает белые поверхности с помощью **Paper Mode** |
+| работаете в Miro или FigJam | затемняет края через **Focus Edges**, удерживая внимание в центре |
+| редактируете фото или видео | почти отключает эффект, чтобы не искажать цвет |
+| запускаете игру или фильм | минимально вмешивается в изображение |
 
-## Сборка
+## Главное
 
-Требования:
+- **AI Auto** — выбирает подходящий профиль без ручного переключения.
+- **Paper Mode** — делает белые интерфейсы мягче и уменьшает ощущение глянца.
+- **Focus Edges** — незаметно затемняет периферию экрана и снижает визуальный шум.
+- **Adaptive Overlay** — работает на всех дисплеях и Spaces.
+- **Smart Pause** — временно отключает эффект и автоматически возвращает его позже.
+- **Menu Bar Control** — быстрый доступ к режимам, силе эффекта и пояснениям.
+- **Privacy by design** — всё работает локально, без Screen Recording и Accessibility.
 
-- macOS 14 или новее.
-- Xcode Command Line Tools.
+<details>
+<summary><strong>Как выглядят Paper Mode и Focus Edges в интерфейсе</strong></summary>
+<br>
+<p align="center">
+  <img src="Docs/assets/app-interface.jpg" width="900" alt="MyNightMode controls and feature explanations">
+</p>
+</details>
+
+## Быстрый старт
+
+### Требования
+
+- macOS 14 или новее
+- Xcode Command Line Tools
+
+### Сборка
 
 ```bash
 chmod +x scripts/*.sh
 ./scripts/build_app.sh
 ```
 
-Готовый bundle:
+Готовое приложение появится здесь:
 
 ```text
 dist/MyNightMode.app
 ```
 
-## Важное ограничение проверки
+Запуск из проекта:
 
-Архив собран и статически проверен в среде без macOS SDK. Здесь невозможно реально скомпилировать AppKit-приложение. Финальная проверка выполняется на настоящем Mac через `scripts/build_app.sh`, который собирает release, создаёт `.app`, подписывает ad-hoc подписью, проверяет bundle и делает smoke launch.
+```bash
+./scripts/run_app.sh
+```
 
-Created by **@selfztt1337**.
+## Управление
+
+- Иконка в menu bar — открыть быстрые настройки
+- `⌥⌘D` — включить или отключить эффект
+- `?` и кнопки `ⓘ` — открыть встроенные пояснения и обучение
+
+## Приватность
+
+MyNightMode не записывает экран, не читает его содержимое и не отправляет данные во внешние сервисы. Для работы используются только системные данные о текущем приложении и локальные настройки.
+
+## Статус проекта
+
+MyNightMode находится в активной разработке. Перед первым использованием соберите приложение на своём Mac и проверьте поведение на вашей версии macOS и конфигурации дисплеев.
+
+## Лицензия
+
+Разрешено личное некоммерческое использование и модификация. Условия распространения и коммерческого использования описаны в [`LICENSE.txt`](LICENSE.txt).
+
+<p align="center">
+  Made for calmer nights on macOS.<br>
+  <strong>@selfztt1337</strong>
+</p>
