@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:MyNightMode_AI_Minimal_V7_FIXED}",
+            "name": "Debug MyNightMode",
+            "target": "MyNightMode",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug MyNightMode"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:MyNightMode_AI_Minimal_V7_FIXED}",
+            "name": "Release MyNightMode",
+            "target": "MyNightMode",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release MyNightMode"
+        }
+    ]
+}
