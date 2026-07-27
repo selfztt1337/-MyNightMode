@@ -9,6 +9,7 @@ struct MenuBarView: View {
         VStack(alignment: .leading, spacing: 16) {
             header
             displaySection
+            modeSection
             quickPresetsSection
             intensitySection
             protectionControls
@@ -76,6 +77,39 @@ struct MenuBarView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+        }
+    }
+
+    private var modeSection: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            sectionTitle("Режим")
+
+            HStack(spacing: 6) {
+                ForEach(UserMode.allCases) { mode in
+                    Button {
+                        guard let displayID = selectedDisplay?.id else { return }
+                        model.updateDisplayConfiguration(for: displayID) { $0.mode = mode }
+                    } label: {
+                        VStack(spacing: 4) {
+                            Image(systemName: mode.symbol)
+                            Text(mode.title)
+                                .lineLimit(1)
+                        }
+                        .font(.caption2.weight(.medium))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 7)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .background(
+                        selectedConfiguration?.mode == mode ? Color.accentColor : Color.primary.opacity(0.07),
+                        in: RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    )
+                    .foregroundStyle(selectedConfiguration?.mode == mode ? Color.white : Color.primary)
+                    .help(modeHelp(mode))
+                }
+            }
+            .disabled(selectedDisplay == nil || selectedConfiguration?.isEnabled == false)
         }
     }
 
