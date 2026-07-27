@@ -318,18 +318,25 @@ struct ContentView: View {
     }
 
     private var footer: some View {
-        HStack {
-            Label("⌥⌘D", systemImage: "keyboard")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-                .help("Глобальная горячая клавиша включения и выключения")
-            Spacer()
-            Button("Обучение") { showOnboarding = true }
+        VStack(spacing: 8) {
+            HStack {
+                Label("⌥⌘D", systemImage: "keyboard")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .help("Глобальная горячая клавиша включения и выключения")
+                Spacer()
+                Button("Обучение") { showOnboarding = true }
+                    .buttonStyle(.plain)
+                SettingsLink {
+                    Label("Настройки", systemImage: "gearshape")
+                }
                 .buttonStyle(.plain)
-            SettingsLink {
-                Label("Настройки", systemImage: "gearshape")
             }
-            .buttonStyle(.plain)
+
+            Text("© 2026 @selfztt1337")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+                .textSelection(.enabled)
         }
         .font(.callout)
         .padding(.top, 2)

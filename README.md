@@ -73,5 +73,6 @@ dist/MyNightMode.app
 MyNightMode не записывает экран, не читает содержимое окон и не отправляет данные в облако.
 
 <p align="center">
-  <sub>Made for calmer nights on macOS 🌙</sub>
+  <sub>Made for calmer nights on macOS 🌙</sub><br>
+  <sub>© 2026 <strong>@selfztt1337</strong>. All rights reserved.</sub>
 </p>

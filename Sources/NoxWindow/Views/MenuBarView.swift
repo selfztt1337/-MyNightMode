@@ -250,6 +250,11 @@ struct MenuBarView: View {
             }
             .buttonStyle(.plain)
             .font(.callout)
+
+            Text("© 2026 @selfztt1337")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+                .textSelection(.enabled)
         }
     }
 
