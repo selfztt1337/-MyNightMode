@@ -30,6 +30,13 @@ final class HotKeyManager {
 
     private func registerDefault() {
         let identifier = EventHotKeyID(signature: OSType(0x4E4F5857), id: 1)
-        RegisterEventHotKey(UInt32(kVK_ANSI_D), UInt32(optionKey | cmdKey), identifier, GetApplicationEventTarget(), 0, &hotKeyRef)
+        RegisterEventHotKey(
+            UInt32(kVK_ANSI_N),
+            UInt32(controlKey | optionKey | cmdKey),
+            identifier,
+            GetApplicationEventTarget(),
+            0,
+            &hotKeyRef
+        )
     }
 }

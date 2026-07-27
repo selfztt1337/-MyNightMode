@@ -265,7 +265,11 @@ struct ContentView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .background(.white.opacity(0.055), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .background(
+                        selectedConfiguration?.matches(preset) == true ? Color.accentColor : Color.white.opacity(0.055),
+                        in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    )
+                    .foregroundStyle(selectedConfiguration?.matches(preset) == true ? Color.white : Color.primary)
                     .help("Применить пресет «\(preset.settingsTitle)»")
                 }
             }
@@ -371,7 +375,7 @@ struct ContentView: View {
     private var footer: some View {
         VStack(spacing: 8) {
             HStack {
-                Label("⌥⌘D", systemImage: "keyboard")
+                Label("⌃⌥⌘N", systemImage: "keyboard")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
                     .help("Глобальная горячая клавиша включения и выключения")

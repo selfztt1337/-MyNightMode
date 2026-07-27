@@ -17,7 +17,7 @@ struct MyNightModeApp: App {
             CommandGroup(replacing: .newItem) { }
             CommandMenu("MyNightMode") {
                 Button(model.isEnabled ? "Выключить" : "Включить") { model.toggle() }
-                    .keyboardShortcut("d", modifiers: [.command, .option])
+                    .keyboardShortcut("n", modifiers: [.control, .option, .command])
             }
         }
 

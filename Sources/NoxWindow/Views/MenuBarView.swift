@@ -91,7 +91,11 @@ struct MenuBarView: View {
 
             HStack(spacing: 7) {
                 ForEach(QuickPreset.allCases) { preset in
-                    presetButton(preset.title, symbol: preset.symbol) {
+                    presetButton(
+                        preset.title,
+                        symbol: preset.symbol,
+                        isSelected: selectedConfiguration?.matches(preset) == true
+                    ) {
                         if let displayID = selectedDisplay?.id {
                             model.apply(preset, to: displayID)
                         } else {
@@ -291,7 +295,12 @@ struct MenuBarView: View {
     }
 
 
-    private func presetButton(_ title: String, symbol: String, action: @escaping () -> Void) -> some View {
+    private func presetButton(
+        _ title: String,
+        symbol: String,
+        isSelected: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
             VStack(spacing: 5) {
                 Image(systemName: symbol)
@@ -305,7 +314,11 @@ struct MenuBarView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .background(.primary.opacity(0.055), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .background(
+            isSelected ? Color.accentColor : Color.primary.opacity(0.055),
+            in: RoundedRectangle(cornerRadius: 9, style: .continuous)
+        )
+        .foregroundStyle(isSelected ? Color.white : Color.primary)
         .help("Применить готовый набор настроек")
     }
 

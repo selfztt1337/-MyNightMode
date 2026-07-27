@@ -123,6 +123,14 @@ struct DisplayConfiguration: Codable, Equatable {
         focusEdges = preset.focusEdges
     }
 
+    func matches(_ preset: QuickPreset) -> Bool {
+        self.preset == preset &&
+        mode == preset.mode &&
+        abs(intensity - preset.intensity) < 0.001 &&
+        paperMode == preset.paperMode &&
+        focusEdges == preset.focusEdges
+    }
+
     private enum CodingKeys: String, CodingKey {
         case isEnabled, preset, mode, intensity, paperMode, focusEdges
     }
