@@ -32,15 +32,10 @@
 ## Интерфейс
 
 <p align="center">
-  <img src="Docs/assets/interface-current.gif" width="520" alt="Реальное окно MyNightMode: переключение пресетов">
+  <img src="Docs/assets/interface-current.gif" width="760" alt="MyNightMode: выбор режима, пресета, интенсивности и Smart Pause">
 </p>
 
-<p align="center">
-  <img src="Docs/assets/main-window-current.png" width="400" alt="Главное окно MyNightMode">
-  <img src="Docs/assets/main-window-focus.png" width="400" alt="MyNightMode с выбранным пресетом Фокус">
-</p>
-
-GIF собран из настоящих снимков актуальной release-сборки приложения — без макетов и декоративной довёрстки.
+Плавная демонстрация показывает основной путь: выбор режима и пресета, настройку силы эффекта и запуск Smart Pause. Весь интерфейс остаётся в кадре.
 
 ## Комфорт при чтении и работе
 
@@ -48,11 +43,15 @@ GIF собран из настоящих снимков актуальной rel
   <img src="Docs/showcase/comfort-modes.gif" alt="Paper Mode and Focus Edges demonstration">
 </p>
 
-## Smart Pause
+## Управление и Smart Pause
 
 <p align="center">
-  <img src="Docs/showcase/smart-pause.png" alt="MyNightMode Smart Pause timer options">
+  <img src="Docs/showcase/smart-pause.png" alt="MyNightMode: отдельные настройки дисплеев, свой хоткей и Smart Pause">
 </p>
+
+- Отдельные режим, пресет и интенсивность для каждого подключённого дисплея.
+- Назначаемая пользователем глобальная горячая клавиша.
+- Smart Pause на 15, 30, 60 или 120 минут — либо до завтра, 09:00.
 
 ## Сборка
 
