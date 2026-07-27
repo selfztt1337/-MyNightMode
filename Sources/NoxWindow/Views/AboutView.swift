@@ -2,12 +2,13 @@ import SwiftUI
 
 struct AboutView: View {
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 13) {
             Image(nsImage: NSApplication.shared.applicationIconImage)
-                .resizable().frame(width: 72, height: 72)
+                .resizable()
+                .frame(width: 72, height: 72)
                 .clipShape(RoundedRectangle(cornerRadius: 17, style: .continuous))
             Text("MyNightMode").font(.title.bold())
-            Text("Минималистичный eye-comfort фильтр для macOS")
+            Text("Адаптивный ночной режим для macOS")
                 .foregroundStyle(.secondary)
             Text("created by @selfztt1337").font(.callout.weight(.semibold))
         }

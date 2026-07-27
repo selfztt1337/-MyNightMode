@@ -4,22 +4,36 @@ import Foundation
 struct AppClassifier {
     func profile(for app: NSRunningApplication?) -> ActiveProfile {
         guard let app else { return .neutral }
-        let id = (app.bundleIdentifier ?? "").lowercased()
-        let name = (app.localizedName ?? "").lowercased()
-        let value = id + " " + name
+        let value = "\(app.bundleIdentifier ?? "") \(app.localizedName ?? "")".lowercased()
 
-        let playTokens = ["steam", "epicgames", "gog", "battle.net", "minecraft", "wine", "whisky", "crossover", "game"]
-        if playTokens.contains(where: value.contains) { return .play }
-
-        let readTokens = ["books", "kindle", "preview", "pdf", "reader", "pocket", "reeder", "news"]
-        if readTokens.contains(where: value.contains) { return .read }
-
-        let workTokens = ["miro", "figma", "visual studio code", "vscode", "cursor", "xcode", "notion", "slack", "mattermost", "zoom", "teams", "telegram", "excel", "word", "powerpoint", "obsidian", "terminal", "iterm", "warp", "github"]
-        if workTokens.contains(where: value.contains) { return .work }
-
-        let browserTokens = ["safari", "chrome", "arc", "firefox", "opera", "brave", "edge"]
-        if browserTokens.contains(where: value.contains) { return .read }
-
+        if containsAny(value, ["miro", "figma", "figjam", "whimsical", "mural", "freeform"]) {
+            return .whiteboard
+        }
+        if containsAny(value, ["visual studio code", "vscode", "cursor", "xcode", "zed", "sublime", "nova", "terminal", "iterm", "warp", "github desktop"]) {
+            return .coding
+        }
+        if containsAny(value, ["photoshop", "lightroom", "illustrator", "affinity", "capture one", "davinci", "final cut", "premiere", "blender", "cinema 4d"]) {
+            return .creative
+        }
+        if containsAny(value, ["steam", "epicgames", "gog", "battle.net", "minecraft", "wine", "whisky", "crossover", "geforce now", "game"]) {
+            return .gaming
+        }
+        if containsAny(value, ["vlc", "iina", "quicktime", "tv.app", "netflix", "plex", "infuse", "music"]) {
+            return .media
+        }
+        if containsAny(value, ["books", "kindle", "preview", "pdf", "reader", "pocket", "reeder", "news", "calibre"]) {
+            return .reading
+        }
+        if containsAny(value, ["safari", "chrome", "arc", "firefox", "opera", "brave", "edge", "orion"]) {
+            return .reading
+        }
+        if containsAny(value, ["notion", "slack", "mattermost", "zoom", "teams", "telegram", "excel", "word", "powerpoint", "obsidian", "linear", "jira", "mail", "calendar"]) {
+            return .work
+        }
         return .neutral
+    }
+
+    private func containsAny(_ value: String, _ tokens: [String]) -> Bool {
+        tokens.contains(where: value.contains)
     }
 }

@@ -9,17 +9,12 @@ let package = Package(
         .executableTarget(
             name: "MyNightMode",
             path: "Sources/NoxWindow",
-            exclude: [
-                "Services/CaptureOutput.swift",
-                "Services/FrameRenderer.swift",
-                "Services/PermissionService.swift",
-                "Services/WindowCatalog.swift"
-            ],
             resources: [.process("Resources")],
             linkerSettings: [
                 .linkedFramework("AppKit"),
                 .linkedFramework("SwiftUI"),
                 .linkedFramework("QuartzCore"),
+                .linkedFramework("CoreImage"),
                 .linkedFramework("ServiceManagement"),
                 .linkedFramework("Carbon"),
                 .linkedFramework("IOKit")

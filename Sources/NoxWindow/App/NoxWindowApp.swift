@@ -12,7 +12,7 @@ struct MyNightModeApp: App {
                 .task { model.start() }
         }
         .windowStyle(.hiddenTitleBar)
-        .defaultSize(width: 520, height: 470)
+        .defaultSize(width: 520, height: 590)
         .commands {
             CommandGroup(replacing: .newItem) { }
             CommandMenu("MyNightMode") {
@@ -28,7 +28,7 @@ struct MyNightModeApp: App {
 
         Settings {
             SettingsView(model: model)
-                .frame(width: 420, height: 230)
+                .frame(width: 430, height: 340)
                 .preferredColorScheme(.dark)
         }
     }

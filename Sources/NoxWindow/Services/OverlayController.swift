@@ -1,5 +1,7 @@
 import AppKit
 import Combine
+import CoreImage
+import QuartzCore
 
 @MainActor
 final class OverlayController: ObservableObject {
@@ -7,25 +9,27 @@ final class OverlayController: ObservableObject {
     @Published private(set) var activeProfile: ActiveProfile = .neutral
     @Published private(set) var displayBrightness: Double?
     @Published private(set) var activeAppName = "macOS"
+    @Published private(set) var sessionMinutes: Int = 0
 
     private let settings: SettingsStore
     private let brightnessReader = DisplayBrightnessReader()
     private let classifier = AppClassifier()
+    private let adaptiveEngine = AdaptiveEngine()
     private var panels: [PassiveOverlayPanel] = []
     private var timer: Timer?
     private var subscriptions = Set<AnyCancellable>()
     private var observers: [NSObjectProtocol] = []
+    private var sessionStartedAt = Date()
 
     init(settings: SettingsStore) {
         self.settings = settings
 
-        Publishers.CombineLatest(settings.$userMode, settings.$intensity)
+        Publishers.CombineLatest4(settings.$userMode, settings.$intensity, settings.$paperMode, settings.$focusEdges)
             .receive(on: RunLoop.main)
-            .sink { [weak self] _, _ in self?.refreshNow() }
+            .sink { [weak self] _, _, _, _ in self?.refreshNow() }
             .store(in: &subscriptions)
 
-        let workspaceCenter = NSWorkspace.shared.notificationCenter
-        observers.append(workspaceCenter.addObserver(
+        observers.append(NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didActivateApplicationNotification,
             object: nil,
             queue: .main
@@ -40,6 +44,22 @@ final class OverlayController: ObservableObject {
         ) { [weak self] _ in
             Task { @MainActor in self?.rebuildPanels() }
         })
+
+        observers.append(NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.sessionDidResignActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.hidePanels() }
+        })
+
+        observers.append(NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.sessionDidBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.refreshNow() }
+        })
     }
 
     deinit {
@@ -52,11 +72,12 @@ final class OverlayController: ObservableObject {
 
     func start() {
         guard !isRunning else { refreshNow(); return }
-        rebuildPanels()
         isRunning = true
+        sessionStartedAt = Date()
+        rebuildPanels()
         refreshNow()
 
-        let timer = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
+        let timer = Timer(timeInterval: 2.0, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.refreshNow() }
         }
         self.timer = timer
@@ -69,6 +90,7 @@ final class OverlayController: ObservableObject {
         panels.forEach { $0.orderOut(nil); $0.close() }
         panels.removeAll()
         isRunning = false
+        sessionMinutes = 0
     }
 
     func toggle() {
@@ -76,11 +98,16 @@ final class OverlayController: ObservableObject {
     }
 
     private func rebuildPanels() {
-        guard isRunning || panels.isEmpty else { return }
         panels.forEach { $0.orderOut(nil); $0.close() }
         panels = NSScreen.screens.map(makePanel)
-        if isRunning { panels.forEach { $0.orderFrontRegardless() } }
-        applyAppearance()
+        if isRunning {
+            panels.forEach { $0.orderFrontRegardless() }
+            applyAppearance()
+        }
+    }
+
+    private func hidePanels() {
+        panels.forEach { $0.orderOut(nil) }
     }
 
     private func makePanel(for screen: NSScreen) -> PassiveOverlayPanel {
@@ -103,73 +130,118 @@ final class OverlayController: ObservableObject {
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         panel.sharingType = .none
         panel.becomesKeyOnlyIfNeeded = false
-
-        let view = NSView(frame: CGRect(origin: .zero, size: screen.frame.size))
-        view.autoresizingMask = [.width, .height]
-        view.wantsLayer = true
-        panel.contentView = view
+        panel.contentView = OverlayView(frame: CGRect(origin: .zero, size: screen.frame.size))
         return panel
     }
 
     private func refreshNow() {
+        guard isRunning else { return }
         let app = NSWorkspace.shared.frontmostApplication
         activeAppName = app?.localizedName ?? "macOS"
         displayBrightness = brightnessReader.currentBrightness()
+        sessionMinutes = max(0, Int(Date().timeIntervalSince(sessionStartedAt) / 60.0))
 
         switch settings.userMode {
         case .auto: activeProfile = classifier.profile(for: app)
         case .work: activeProfile = .work
-        case .read: activeProfile = .read
-        case .play: activeProfile = .play
+        case .read: activeProfile = .reading
+        case .night: activeProfile = .night
+        case .play: activeProfile = .gaming
         }
         applyAppearance()
     }
 
     private func applyAppearance() {
         guard isRunning else { return }
-        let appearance = appearanceForCurrentContext()
+        let appearance = adaptiveEngine.appearance(
+            profile: activeProfile,
+            intensity: settings.intensity,
+            displayBrightness: displayBrightness,
+            sessionMinutes: Double(sessionMinutes),
+            paperEnabled: settings.paperMode,
+            focusEdgesEnabled: settings.focusEdges,
+            hour: Calendar.current.component(.hour, from: Date())
+        )
+
+        let color = NSColor(
+            calibratedRed: appearance.red,
+            green: appearance.green,
+            blue: appearance.blue,
+            alpha: 1.0
+        )
+
         for panel in panels {
-            guard let layer = panel.contentView?.layer else { continue }
-            CATransaction.begin()
-            CATransaction.setAnimationDuration(0.22)
-            layer.backgroundColor = appearance.color.withAlphaComponent(appearance.alpha).cgColor
-            CATransaction.commit()
+            guard let view = panel.contentView as? OverlayView else { continue }
+            view.apply(color: color, alpha: appearance.alpha, paperOpacity: appearance.paperOpacity, edgeOpacity: appearance.edgeOpacity)
             if !panel.isVisible { panel.orderFrontRegardless() }
         }
-    }
-
-    private func appearanceForCurrentContext() -> (color: NSColor, alpha: CGFloat) {
-        let strength = min(max(settings.intensity, 0.15), 1.0)
-        let brightness = displayBrightness ?? 0.55
-        let hour = Calendar.current.component(.hour, from: Date())
-        let nightBoost: Double = (hour >= 21 || hour < 7) ? 0.08 : 0
-
-        // At higher physical display brightness the filter becomes stronger.
-        let brightnessBoost = max(0, brightness - 0.35) * 0.28
-        let base: Double
-        let color: NSColor
-
-        switch activeProfile {
-        case .work:
-            base = 0.16
-            color = NSColor(calibratedRed: 0.025, green: 0.035, blue: 0.055, alpha: 1)
-        case .read:
-            base = 0.19
-            color = NSColor(calibratedRed: 0.14, green: 0.065, blue: 0.018, alpha: 1)
-        case .play:
-            base = 0.045
-            color = NSColor(calibratedRed: 0.015, green: 0.018, blue: 0.028, alpha: 1)
-        case .neutral:
-            base = 0.12
-            color = NSColor(calibratedRed: 0.035, green: 0.030, blue: 0.048, alpha: 1)
-        }
-
-        let alpha = min(0.78, base + strength * 0.37 + brightnessBoost + nightBoost)
-        return (color, CGFloat(alpha))
     }
 }
 
 private final class PassiveOverlayPanel: NSPanel {
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
+}
+
+private final class OverlayView: NSView {
+    private let tintLayer = CALayer()
+    private let paperLayer = CALayer()
+    private let edgeLayer = CAGradientLayer()
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        wantsLayer = true
+        guard let root = layer else { return }
+
+        tintLayer.frame = bounds
+        tintLayer.autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
+        root.addSublayer(tintLayer)
+
+        paperLayer.frame = bounds
+        paperLayer.autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
+        paperLayer.contentsGravity = .resizeAspectFill
+        paperLayer.compositingFilter = "softLightBlendMode"
+        paperLayer.contents = Self.makePaperTexture()
+        root.addSublayer(paperLayer)
+
+        edgeLayer.type = .radial
+        edgeLayer.frame = bounds
+        edgeLayer.autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
+        edgeLayer.startPoint = CGPoint(x: 0.5, y: 0.5)
+        edgeLayer.endPoint = CGPoint(x: 1.0, y: 1.0)
+        edgeLayer.locations = [0.0, 0.58, 1.0]
+        edgeLayer.colors = [
+            NSColor.clear.cgColor,
+            NSColor.clear.cgColor,
+            NSColor.black.cgColor
+        ]
+        edgeLayer.opacity = 0
+        root.addSublayer(edgeLayer)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func apply(color: NSColor, alpha: Double, paperOpacity: Double, edgeOpacity: Double) {
+        CATransaction.begin()
+        CATransaction.setAnimationDuration(0.28)
+        CATransaction.setAnimationTimingFunction(CAMediaTimingFunction(name: .easeInEaseOut))
+        tintLayer.backgroundColor = color.withAlphaComponent(alpha).cgColor
+        paperLayer.opacity = Float(paperOpacity)
+        edgeLayer.opacity = Float(edgeOpacity)
+        CATransaction.commit()
+    }
+
+    private static func makePaperTexture() -> CGImage? {
+        guard let random = CIFilter(name: "CIRandomGenerator")?.outputImage else { return nil }
+        let crop = random.cropped(to: CGRect(x: 0, y: 0, width: 512, height: 512))
+        let controls = CIFilter(name: "CIColorControls")
+        controls?.setValue(crop, forKey: kCIInputImageKey)
+        controls?.setValue(0.0, forKey: kCIInputSaturationKey)
+        controls?.setValue(0.12, forKey: kCIInputContrastKey)
+        controls?.setValue(-0.44, forKey: kCIInputBrightnessKey)
+        guard let output = controls?.outputImage else { return nil }
+        return CIContext(options: [.useSoftwareRenderer: false]).createCGImage(output, from: output.extent)
+    }
 }
