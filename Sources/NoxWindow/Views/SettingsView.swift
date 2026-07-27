@@ -95,6 +95,33 @@ struct SettingsView: View {
                     set: { model.loginItem.setEnabled($0) }
                 )
             )
+
+            Divider()
+
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Глобальная горячая клавиша")
+                        .font(.callout.weight(.medium))
+                    Text(model.hotKeyRegistrationFailed
+                         ? "Сочетание занято другим приложением. Выберите другое."
+                         : "Нажмите поле и введите сочетание с ⌃, ⌥, ⇧ или ⌘.")
+                        .font(.caption)
+                        .foregroundStyle(model.hotKeyRegistrationFailed ? Color.red : Color.secondary)
+                }
+
+                Spacer()
+
+                HotKeyRecorderView(
+                    shortcut: model.settings.hotKeyShortcut,
+                    onChange: model.setHotKey
+                )
+                .frame(width: 150, height: 28)
+
+                Button("Сбросить") {
+                    model.resetHotKey()
+                }
+                .buttonStyle(.bordered)
+            }
         }
     }
 

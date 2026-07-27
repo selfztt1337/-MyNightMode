@@ -10,6 +10,7 @@ final class SettingsStore: ObservableObject {
     @Published var focusEdges: Bool { didSet { defaults.set(focusEdges, forKey: Keys.focusEdges) } }
     @Published var breakReminders: Bool { didSet { defaults.set(breakReminders, forKey: Keys.breakReminders) } }
     @Published var breakIntervalMinutes: Int { didSet { defaults.set(breakIntervalMinutes, forKey: Keys.breakIntervalMinutes) } }
+    @Published var hotKeyShortcut: HotKeyShortcut { didSet { saveHotKeyShortcut() } }
     @Published private(set) var displayConfigurations: [String: DisplayConfiguration] {
         didSet { saveDisplayConfigurations() }
     }
@@ -25,6 +26,7 @@ final class SettingsStore: ObservableObject {
         static let breakReminders = "breakReminders.v9"
         static let breakIntervalMinutes = "breakIntervalMinutes.v10.1"
         static let displayConfigurations = "displayConfigurations.v11.3"
+        static let hotKeyShortcut = "hotKeyShortcut.v11.3"
     }
 
     init() {
@@ -35,6 +37,12 @@ final class SettingsStore: ObservableObject {
         focusEdges = defaults.object(forKey: Keys.focusEdges) as? Bool ?? true
         breakReminders = defaults.object(forKey: Keys.breakReminders) as? Bool ?? true
         breakIntervalMinutes = defaults.object(forKey: Keys.breakIntervalMinutes) as? Int ?? 50
+        if let data = defaults.data(forKey: Keys.hotKeyShortcut),
+           let saved = try? JSONDecoder().decode(HotKeyShortcut.self, from: data) {
+            hotKeyShortcut = saved
+        } else {
+            hotKeyShortcut = .default
+        }
         if let data = defaults.data(forKey: Keys.displayConfigurations),
            let saved = try? JSONDecoder().decode([String: DisplayConfiguration].self, from: data) {
             displayConfigurations = saved
@@ -75,6 +83,7 @@ final class SettingsStore: ObservableObject {
         focusEdges = true
         breakReminders = true
         breakIntervalMinutes = 50
+        hotKeyShortcut = .default
         displayConfigurations = [:]
     }
 
@@ -90,5 +99,10 @@ final class SettingsStore: ObservableObject {
     private func saveDisplayConfigurations() {
         guard let data = try? JSONEncoder().encode(displayConfigurations) else { return }
         defaults.set(data, forKey: Keys.displayConfigurations)
+    }
+
+    private func saveHotKeyShortcut() {
+        guard let data = try? JSONEncoder().encode(hotKeyShortcut) else { return }
+        defaults.set(data, forKey: Keys.hotKeyShortcut)
     }
 }

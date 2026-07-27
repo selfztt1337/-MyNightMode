@@ -375,7 +375,7 @@ struct ContentView: View {
     private var footer: some View {
         VStack(spacing: 8) {
             HStack {
-                Label("⌃⌥⌘N", systemImage: "keyboard")
+                Label(model.settings.hotKeyShortcut.displayText, systemImage: "keyboard")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
                     .help("Глобальная горячая клавиша включения и выключения")

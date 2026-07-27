@@ -12,6 +12,7 @@ final class AppModel: ObservableObject {
 
     @Published private(set) var breakDismissedForSession = false
     @Published private(set) var pauseUntil: Date?
+    @Published private(set) var hotKeyRegistrationFailed = false
 
     var isEnabled: Bool { overlay.isRunning }
     var activeProfile: ActiveProfile { overlay.activeProfile }
@@ -42,6 +43,7 @@ final class AppModel: ObservableObject {
         hotKey.action = { [weak self] in
             Task { @MainActor in self?.toggle() }
         }
+        hotKeyRegistrationFailed = !hotKey.register(settings.hotKeyShortcut)
 
         overlay.objectWillChange
             .receive(on: RunLoop.main)
@@ -52,6 +54,30 @@ final class AppModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &subscriptions)
+
+        settings.$hotKeyShortcut
+            .dropFirst()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] shortcut in
+                guard let self else { return }
+                self.hotKeyRegistrationFailed = !self.hotKey.register(shortcut)
+            }
+            .store(in: &subscriptions)
+    }
+
+    func setHotKey(_ shortcut: HotKeyShortcut) {
+        guard hotKey.register(shortcut) else {
+            _ = hotKey.register(settings.hotKeyShortcut)
+            hotKeyRegistrationFailed = true
+            objectWillChange.send()
+            return
+        }
+        hotKeyRegistrationFailed = false
+        settings.hotKeyShortcut = shortcut
+    }
+
+    func resetHotKey() {
+        setHotKey(.default)
     }
 
     func start() {

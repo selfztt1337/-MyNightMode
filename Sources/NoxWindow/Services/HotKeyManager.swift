@@ -9,7 +9,6 @@ final class HotKeyManager {
 
     init() {
         installHandler()
-        registerDefault()
     }
 
     deinit {
@@ -28,15 +27,21 @@ final class HotKeyManager {
         }, 1, &eventType, pointer, &eventHandler)
     }
 
-    private func registerDefault() {
+    @discardableResult
+    func register(_ shortcut: HotKeyShortcut) -> Bool {
+        if let hotKeyRef {
+            UnregisterEventHotKey(hotKeyRef)
+            self.hotKeyRef = nil
+        }
         let identifier = EventHotKeyID(signature: OSType(0x4E4F5857), id: 1)
-        RegisterEventHotKey(
-            UInt32(kVK_ANSI_N),
-            UInt32(controlKey | optionKey | cmdKey),
+        let status = RegisterEventHotKey(
+            shortcut.keyCode,
+            shortcut.modifiers,
             identifier,
             GetApplicationEventTarget(),
             0,
             &hotKeyRef
         )
+        return status == noErr
     }
 }

@@ -1,4 +1,26 @@
 import Foundation
+import Carbon
+
+struct HotKeyShortcut: Codable, Equatable {
+    var keyCode: UInt32
+    var modifiers: UInt32
+    var displayKey: String
+
+    static let `default` = HotKeyShortcut(
+        keyCode: UInt32(kVK_ANSI_N),
+        modifiers: UInt32(controlKey | optionKey | cmdKey),
+        displayKey: "N"
+    )
+
+    var displayText: String {
+        var result = ""
+        if modifiers & UInt32(controlKey) != 0 { result += "⌃" }
+        if modifiers & UInt32(optionKey) != 0 { result += "⌥" }
+        if modifiers & UInt32(shiftKey) != 0 { result += "⇧" }
+        if modifiers & UInt32(cmdKey) != 0 { result += "⌘" }
+        return result + displayKey
+    }
+}
 
 enum UserMode: String, CaseIterable, Identifiable, Codable {
     case auto, work, read, night, play

@@ -32,8 +32,15 @@
 ## Интерфейс
 
 <p align="center">
-  <img src="Docs/showcase/app-tour.gif" alt="MyNightMode app, menu bar and settings">
+  <img src="Docs/assets/interface-current.gif" width="520" alt="Реальное окно MyNightMode: переключение пресетов">
 </p>
+
+<p align="center">
+  <img src="Docs/assets/main-window-current.png" width="400" alt="Главное окно MyNightMode">
+  <img src="Docs/assets/main-window-focus.png" width="400" alt="MyNightMode с выбранным пресетом Фокус">
+</p>
+
+GIF собран из настоящих снимков актуальной release-сборки приложения — без макетов и декоративной довёрстки.
 
 ## Комфорт при чтении и работе
 
@@ -67,7 +74,8 @@ dist/MyNightMode.app
 - Выберите дисплей в главном окне или menu bar — все параметры ниже применяются именно к нему
 - Активный быстрый пресет подсвечивается; ручное изменение его параметров снимает подсветку
 - Главное окно и menu bar используют одинаковое компактное управление Smart Pause
-- `⌃⌥⌘N` — включить или отключить эффект
+- Горячую клавишу включения и выключения можно назначить самостоятельно в настройках
+- `⌃⌥⌘N` — сочетание по умолчанию
 - `?` — открыть обучение
 - `ⓘ` — объяснение конкретной функции
 
