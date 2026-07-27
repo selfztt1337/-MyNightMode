@@ -28,8 +28,8 @@ struct MyNightModeApp: App {
 
         Settings {
             SettingsView(model: model)
-                .frame(width: 430, height: 340)
                 .preferredColorScheme(.dark)
         }
+        .defaultSize(width: 720, height: 680)
     }
 }

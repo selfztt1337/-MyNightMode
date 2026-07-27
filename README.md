@@ -1,60 +1,64 @@
 <p align="center">
-  <img src="Resources/AppIcon1024.png" width="110" alt="MyNightMode icon">
+  <img src="Resources/AppIcon1024.png" width="112" alt="MyNightMode icon">
 </p>
 
 <h1 align="center">MyNightMode</h1>
 
 <p align="center">
-  <strong>🌙 Спокойный экран для долгой работы вечером и ночью.</strong><br>
-  AI Auto сам выбирает профиль, Paper Mode смягчает белый фон, а Focus Edges убирает визуальный шум по краям.
+  <strong>🌙 Спокойный экран. Лучше фокус. Меньше ручных настроек.</strong><br>
+  Нативный адаптивный ночной режим для macOS, созданный для долгой работы вечером и ночью.
 </p>
 
 <p align="center">
-  <img alt="macOS 14+" src="https://img.shields.io/badge/macOS-14%2B-111111?style=for-the-badge&logo=apple&logoColor=white">
-  <img alt="Swift" src="https://img.shields.io/badge/Swift-native-F05138?style=for-the-badge&logo=swift&logoColor=white">
-  <img alt="Local-first" src="https://img.shields.io/badge/Local--first-100%25-22C55E?style=for-the-badge">
-  <img alt="Privacy" src="https://img.shields.io/badge/Screen_Recording-not_required-8B5CF6?style=for-the-badge">
+  <img src="https://img.shields.io/badge/macOS-14%2B-111111?style=for-the-badge&logo=apple&logoColor=white" alt="macOS 14+">
+  <img src="https://img.shields.io/badge/Swift-native-F05138?style=for-the-badge&logo=swift&logoColor=white" alt="Swift">
+  <img src="https://img.shields.io/badge/Local--first-100%25-22C55E?style=for-the-badge" alt="Local-first">
+  <img src="https://img.shields.io/badge/Screen_Recording-not_required-8B5CF6?style=for-the-badge" alt="No Screen Recording">
 </p>
 
 <p align="center">
-  <img src="Docs/assets/hero-current.png" width="100%" alt="MyNightMode on macOS">
+  <img src="Docs/assets/hero-v11.png" width="100%" alt="MyNightMode product showcase">
 </p>
 
 ## ✨ Установил → включил AI → забыл
 
-MyNightMode работает поверх macOS и мягко адаптирует экран под то, чем вы занимаетесь.
+MyNightMode подстраивает экран под приложение, время, яркость и длительность текущей сессии.
 
-- 💻 **Код и работа** — снижает резкость яркого фона, не портя читаемость.
-- 📚 **Чтение** — Paper Mode делает PDF, сайты и документы визуально мягче.
-- 🎯 **Фокус** — Focus Edges незаметно затемняет периферию экрана.
-- 🎨 **Фото и видео** — уменьшает вмешательство, когда важна точность цвета.
-- 🎬 **Игры и фильмы** — почти отключает эффект, чтобы не мешать контенту.
+- 💻 **Работа и код:** спокойнее фон, интерфейс остаётся читаемым.
+- 📚 **Чтение:** Paper Mode смягчает PDF, сайты, таблицы и документы.
+- 🎯 **Фокус:** Focus Edges приглушает периферию без блокировки интерфейса.
+- 🎨 **Цвет:** режим с минимальным вмешательством для фото, видео и дизайна.
+- ⏸️ **Пауза:** 15, 30, 60, 120 минут или до завтра 09:00.
 
-## 🎬 Как это выглядит
+## 🎬 Короткая демонстрация
 
 <p align="center">
-  <img src="Docs/assets/demo-current.gif" width="100%" alt="MyNightMode feature demo">
+  <img src="Docs/assets/demo-v11.gif" width="100%" alt="MyNightMode animated walkthrough">
 </p>
 
-## 🚀 Главные фичи
+## 🚀 Что внутри
 
-| | Функция | Что даёт |
+| | Функция | Польза |
 |---|---|---|
-| ✨ | **AI Auto** | Сам выбирает режим по активному приложению, времени, яркости и длительности сессии |
-| 📄 | **Paper Mode** | Смягчает белые поверхности и снижает ощущение глянца |
-| 🎯 | **Focus Edges** | Затемняет края и помогает удерживать внимание в центре |
-| ⚡ | **Menu Bar Control** | Все режимы, сила эффекта, пауза и пояснения в одном компактном окне |
-| ⏸️ | **Smart Pause** | Отключает эффект на 15, 30 или 60 минут и включает обратно автоматически |
-| 🖥️ | **Multi-display** | Работает на нескольких дисплеях и в разных Spaces |
-| 🔒 | **Local-first** | Не записывает экран, не читает содержимое окон и не отправляет данные в облако |
+| ✨ | **AI Auto** | Автоматически выбирает подходящий профиль |
+| ⚡ | **Quick Presets** | Мягко, Чтение, Фокус и Цвет в один клик |
+| 📄 | **Paper Mode** | Смягчает яркие белые поверхности |
+| 🎯 | **Focus Edges** | Уменьшает визуальный шум по краям |
+| ⏸️ | **Smart Pause** | Автоматически возвращает эффект после паузы |
+| 👀 | **Break Timer** | Ненавязчиво предлагает сделать перерыв |
+| 🖥️ | **Multi-display** | Работает на нескольких дисплеях и в Spaces |
+| 🔒 | **Local-first** | Не записывает экран и не отправляет данные в облако |
 
-## 🖼️ Актуальный интерфейс
+## 🖼️ Возможности
 
-<p align="center">
-  <img src="Docs/assets/app-current.jpg" width="100%" alt="Current MyNightMode interface">
-</p>
+<p align="center"><img src="Docs/brand/01-ai-auto.png" width="100%" alt="AI Auto"></p>
+<p align="center"><img src="Docs/brand/02-paper-mode.png" width="100%" alt="Paper Mode"></p>
+<p align="center"><img src="Docs/brand/03-focus-edges.png" width="100%" alt="Focus Edges"></p>
+<p align="center"><img src="Docs/brand/04-smart-pause.png" width="100%" alt="Smart Pause"></p>
+<p align="center"><img src="Docs/brand/05-quick-presets.png" width="100%" alt="Quick Presets"></p>
+<p align="center"><img src="Docs/brand/06-privacy.png" width="100%" alt="Privacy"></p>
 
-## 🛠️ Быстрый запуск
+## 🛠️ Сборка
 
 **Требования:** macOS 14+ и Xcode Command Line Tools.
 
@@ -63,13 +67,13 @@ chmod +x scripts/*.sh
 ./scripts/build_app.sh
 ```
 
-Готовое приложение:
+Готовое приложение появится здесь:
 
 ```text
 dist/MyNightMode.app
 ```
 
-Запустить из проекта:
+Запуск:
 
 ```bash
 ./scripts/run_app.sh
@@ -77,24 +81,24 @@ dist/MyNightMode.app
 
 ## ⌨️ Управление
 
-- Иконка в menu bar — открыть быстрые настройки
-- `⌥⌘D` — включить или отключить эффект
-- `?` и `ⓘ` — открыть пояснения и обучение
-- **Smart Pause** — временно выключить эффект без потери настроек
+- Иконка в menu bar — быстрые настройки
+- `⌥⌘D` — включить или отключить защиту
+- `ⓘ` — объяснение конкретной функции
+- `?` — повторно открыть обучение
+- Нажатие на процент интенсивности — вернуть рекомендуемые 48%
 
-## 🔒 Приватность без звёздочек
+## 🔒 Приватность
 
-MyNightMode не делает скриншоты, не записывает экран, не требует Accessibility и не отправляет данные во внешние сервисы. Всё работает локально на Mac.
+Без Screen Recording. Без Accessibility. Без облачной обработки. Без аналитики. Настройки и адаптация работают локально.
 
-## 🧪 Статус
+## 📦 Готовая сборка
 
-Проект находится в активной разработке. Сборка рассчитана на macOS 14+.
+Исходники хранятся в репозитории. Готовый `.app.zip` рекомендуется публиковать отдельно в **GitHub Releases**.
 
 ## 📄 Лицензия
 
-Личное некоммерческое использование и модификация разрешены. Детали: [`LICENSE.txt`](LICENSE.txt).
+Личное некоммерческое использование и модификация разрешены. Подробности: [`LICENSE.txt`](LICENSE.txt).
 
 <p align="center">
-  <strong>Made for calmer nights on macOS 🌙</strong><br>
-  <sub>@selfztt1337</sub>
+  <strong>Made for calmer nights on macOS 🌙</strong>
 </p>

@@ -1,3 +1,10 @@
+# V10.1 — Timer & Showcase Fix
+
+- Smart Pause is now visible directly in the menu bar.
+- Break reminder interval is configurable: 25/50/75/90 minutes.
+- Settings now have a dedicated “Таймер и паузы” section.
+- README hero and demo GIF were rebuilt from the current V10 interface without broken crops.
+
 # Changelog
 
 ## 4.0.0 — August 2026

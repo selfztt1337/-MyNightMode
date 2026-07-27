@@ -267,7 +267,7 @@ struct ContentView: View {
         HStack(spacing: 12) {
             Image(systemName: "eye.fill")
             VStack(alignment: .leading, spacing: 2) {
-                Text("50 минут без паузы")
+                Text("\(model.settings.breakIntervalMinutes) минут без паузы")
                     .font(.callout.weight(.semibold))
                 Text("Посмотри вдаль 20 секунд. Никаких уведомлений и разрешений.")
                     .font(.caption)

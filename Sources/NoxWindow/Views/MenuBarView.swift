@@ -8,8 +8,10 @@ struct MenuBarView: View {
         VStack(alignment: .leading, spacing: 16) {
             header
             modeSection
+            quickPresetsSection
             intensitySection
-            protectionButton
+            protectionControls
+            smartPauseSection
             comfortSection
             footer
         }
@@ -71,14 +73,48 @@ struct MenuBarView: View {
         }
     }
 
+
+    private var quickPresetsSection: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            HStack {
+                sectionTitle("Быстрые пресеты")
+                Spacer()
+                Text("1 клик")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+
+            HStack(spacing: 7) {
+                presetButton("Мягко", symbol: "moon.stars") {
+                    applyPreset(mode: .auto, intensity: 0.34, paper: true, focus: false)
+                }
+                presetButton("Чтение", symbol: "book") {
+                    applyPreset(mode: .read, intensity: 0.46, paper: true, focus: false)
+                }
+                presetButton("Фокус", symbol: "scope") {
+                    applyPreset(mode: .work, intensity: 0.52, paper: false, focus: true)
+                }
+                presetButton("Цвет", symbol: "paintpalette") {
+                    applyPreset(mode: .play, intensity: 0.18, paper: false, focus: false)
+                }
+            }
+        }
+    }
+
     private var intensitySection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 sectionTitle("Сила эффекта")
                 Spacer()
-                Text("\(Int(model.settings.intensity * 100))%")
-                    .font(.caption.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                Button {
+                    model.settings.intensity = 0.48
+                } label: {
+                    Text("\(Int(model.settings.intensity * 100))%")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("Вернуть рекомендуемую силу 48%")
             }
 
             HStack(spacing: 10) {
@@ -94,20 +130,88 @@ struct MenuBarView: View {
         }
     }
 
-    private var protectionButton: some View {
-        Button(action: model.toggle) {
-            HStack(spacing: 8) {
-                Image(systemName: model.isEnabled ? "pause.fill" : "play.fill")
-                Text(model.isEnabled ? "Приостановить защиту" : "Включить защиту")
-                    .font(.headline)
+    private var protectionControls: some View {
+        HStack(spacing: 9) {
+            Button(action: model.isTemporarilyPaused ? model.resumeNow : model.toggle) {
+                HStack(spacing: 8) {
+                    Image(systemName: model.isTemporarilyPaused ? "play.fill" : (model.isEnabled ? "pause.fill" : "play.fill"))
+                    Text(model.isTemporarilyPaused ? "Продолжить сейчас" : (model.isEnabled ? "Приостановить" : "Включить защиту"))
+                        .font(.headline)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 5)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 5)
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .tint(model.isEnabled ? Color.primary.opacity(0.12) : Color.accentColor)
+            .foregroundStyle(model.isEnabled ? Color.primary : Color.white)
+
+            Menu {
+                Button("15 минут") { model.pause(for: 15) }
+                Button("30 минут") { model.pause(for: 30) }
+                Button("1 час") { model.pause(for: 60) }
+                Button("2 часа") { model.pause(for: 120) }
+                Divider()
+                Button("До завтра, 09:00") { model.pause(for: minutesUntilTomorrowMorning()) }
+            } label: {
+                Image(systemName: "timer")
+                    .font(.system(size: 15, weight: .semibold))
+                    .frame(width: 38, height: 38)
+            }
+            .menuStyle(.borderlessButton)
+            .help("Smart Pause: временно выключить эффект")
+            .disabled(!model.isEnabled && !model.isTemporarilyPaused)
         }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
-        .tint(model.isEnabled ? Color.primary.opacity(0.12) : Color.accentColor)
-        .foregroundStyle(model.isEnabled ? Color.primary : Color.white)
+    }
+
+    private var smartPauseSection: some View {
+        HStack(spacing: 11) {
+            Image(systemName: "timer")
+                .font(.system(size: 14, weight: .medium))
+                .frame(width: 30, height: 30)
+                .background(.primary.opacity(0.07), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 5) {
+                    Text("Smart Pause")
+                        .font(.callout.weight(.medium))
+                    Button {
+                        visibleHelp = .pause
+                    } label: {
+                        Image(systemName: "info.circle")
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .popover(isPresented: Binding(
+                        get: { visibleHelp == .pause },
+                        set: { if !$0 { visibleHelp = nil } }
+                    )) {
+                        FeatureHelpView(feature: .pause)
+                    }
+                }
+
+                Text(model.pauseStatusText ?? "Пауза на 15, 30 или 60 минут")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Menu {
+                Button("15 минут") { model.pause(for: 15) }
+                Button("30 минут") { model.pause(for: 30) }
+                Button("1 час") { model.pause(for: 60) }
+                Button("2 часа") { model.pause(for: 120) }
+                Divider()
+                Button("До завтра, 09:00") { model.pause(for: minutesUntilTomorrowMorning()) }
+            } label: {
+                Text(model.isTemporarilyPaused ? "Изменить" : "Выбрать")
+                    .font(.caption.weight(.semibold))
+            }
+            .disabled(!model.isEnabled && !model.isTemporarilyPaused)
+        }
+        .padding(11)
+        .background(.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
     private var comfortSection: some View {
@@ -205,6 +309,41 @@ struct MenuBarView: View {
         .background(.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
+
+    private func presetButton(_ title: String, symbol: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 5) {
+                Image(systemName: symbol)
+                    .font(.system(size: 13, weight: .medium))
+                Text(title)
+                    .font(.caption2.weight(.medium))
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .background(.primary.opacity(0.055), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .help("Применить готовый набор настроек")
+    }
+
+    private func applyPreset(mode: UserMode, intensity: Double, paper: Bool, focus: Bool) {
+        model.settings.userMode = mode
+        model.settings.intensity = intensity
+        model.settings.paperMode = paper
+        model.settings.focusEdges = focus
+        if !model.isEnabled { model.resumeNow() }
+    }
+
+    private func minutesUntilTomorrowMorning() -> Int {
+        let calendar = Calendar.current
+        let now = Date()
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: now) ?? now.addingTimeInterval(86_400)
+        let target = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: tomorrow) ?? tomorrow
+        return max(1, Int(ceil(target.timeIntervalSince(now) / 60)))
+    }
+
     private func sectionTitle(_ title: String) -> some View {
         Text(title)
             .font(.caption.weight(.semibold))
@@ -225,11 +364,13 @@ struct MenuBarView: View {
 private enum FeatureHelp: Equatable {
     case paper
     case focus
+    case pause
 
     var title: String {
         switch self {
         case .paper: return "Что делает Paper Mode"
         case .focus: return "Что делает фокус по краям"
+        case .pause: return "Как работает Smart Pause"
         }
     }
 
@@ -237,6 +378,7 @@ private enum FeatureHelp: Equatable {
         switch self {
         case .paper: return "doc.text"
         case .focus: return "scope"
+        case .pause: return "timer"
         }
     }
 
@@ -246,6 +388,8 @@ private enum FeatureHelp: Equatable {
             return "Слегка смягчает белые поверхности, контраст и ощущение глянца. Особенно полезен для PDF, статей, документов и долгого чтения."
         case .focus:
             return "Создаёт очень мягкую виньетку: центр остаётся светлее, а края становятся чуть темнее. Это помогает меньше отвлекаться, не перекрывая интерфейс."
+        case .pause:
+            return "Останавливает эффект на 15, 30, 60 или 120 минут, либо до завтра 09:00. После таймера MyNightMode автоматически включит защиту обратно."
         }
     }
 }

@@ -25,7 +25,7 @@ final class AppModel: ObservableObject {
         return "\(Int(value * 100))%"
     }
     var shouldSuggestBreak: Bool {
-        settings.breakReminders && isEnabled && sessionMinutes >= 50 && !breakDismissedForSession
+        settings.breakReminders && isEnabled && sessionMinutes >= settings.breakIntervalMinutes && !breakDismissedForSession
     }
     var isTemporarilyPaused: Bool {
         guard let pauseUntil else { return false }

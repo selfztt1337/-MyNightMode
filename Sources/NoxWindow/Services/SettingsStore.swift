@@ -9,6 +9,7 @@ final class SettingsStore: ObservableObject {
     @Published var paperMode: Bool { didSet { defaults.set(paperMode, forKey: Keys.paperMode) } }
     @Published var focusEdges: Bool { didSet { defaults.set(focusEdges, forKey: Keys.focusEdges) } }
     @Published var breakReminders: Bool { didSet { defaults.set(breakReminders, forKey: Keys.breakReminders) } }
+    @Published var breakIntervalMinutes: Int { didSet { defaults.set(breakIntervalMinutes, forKey: Keys.breakIntervalMinutes) } }
 
     private let defaults = UserDefaults.standard
 
@@ -19,6 +20,7 @@ final class SettingsStore: ObservableObject {
         static let paperMode = "paperMode.v9"
         static let focusEdges = "focusEdges.v9"
         static let breakReminders = "breakReminders.v9"
+        static let breakIntervalMinutes = "breakIntervalMinutes.v10.1"
     }
 
     init() {
@@ -28,6 +30,7 @@ final class SettingsStore: ObservableObject {
         paperMode = defaults.object(forKey: Keys.paperMode) as? Bool ?? true
         focusEdges = defaults.object(forKey: Keys.focusEdges) as? Bool ?? true
         breakReminders = defaults.object(forKey: Keys.breakReminders) as? Bool ?? true
+        breakIntervalMinutes = defaults.object(forKey: Keys.breakIntervalMinutes) as? Int ?? 50
     }
 
     func reset() {
@@ -37,5 +40,6 @@ final class SettingsStore: ObservableObject {
         paperMode = true
         focusEdges = true
         breakReminders = true
+        breakIntervalMinutes = 50
     }
 }
