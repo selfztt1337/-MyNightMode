@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1 — July 28, 2026
+
+- Restored transparent macOS app icon assets so the Dock, Finder and in-app appearance render correctly.
+
 ## 1.1.0 — July 28, 2026
 
 - Added matching light and dark app icons that follow the active macOS appearance.

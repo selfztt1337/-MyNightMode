@@ -11,7 +11,6 @@ private func makeIcon(background: NSColor, foreground: NSColor) -> NSImage {
 
     let bounds = NSRect(origin: .zero, size: canvasSize)
     background.setFill()
-    bounds.fill()
     // macOS icons use a generous optical safe area inside the 1024 px source.
     NSBezierPath(roundedRect: bounds.insetBy(dx: 96, dy: 96), xRadius: 184, yRadius: 184).fill()
 
@@ -42,27 +41,8 @@ private func makeIcon(background: NSColor, foreground: NSColor) -> NSImage {
 }
 
 private func writePNG(_ image: NSImage, named name: String) throws {
-    guard let bitmap = NSBitmapImageRep(
-        bitmapDataPlanes: nil,
-        pixelsWide: Int(canvasSize.width),
-        pixelsHigh: Int(canvasSize.height),
-        bitsPerSample: 8,
-        samplesPerPixel: 3,
-        hasAlpha: false,
-        isPlanar: false,
-        colorSpaceName: .deviceRGB,
-        bytesPerRow: 0,
-        bitsPerPixel: 0
-    ) else {
-        throw CocoaError(.fileWriteUnknown)
-    }
-
-    NSGraphicsContext.saveGraphicsState()
-    NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmap)
-    image.draw(in: NSRect(origin: .zero, size: canvasSize))
-    NSGraphicsContext.restoreGraphicsState()
-
-    guard
+    guard let tiff = image.tiffRepresentation,
+          let bitmap = NSBitmapImageRep(data: tiff),
           let png = bitmap.representation(using: .png, properties: [:]) else {
         throw CocoaError(.fileWriteUnknown)
     }
