@@ -58,9 +58,9 @@ try writePNG(
     makeIcon(background: NSColor(calibratedWhite: 0.035, alpha: 1), foreground: .white),
     named: "AppIconDark1024.png"
 )
-// The bundle icon remains high-contrast on any desktop; runtime appearance selects Light/Dark.
+// The default public icon stays readable in README, Finder and Dock.
 try writePNG(
-    makeIcon(background: NSColor(calibratedWhite: 0.035, alpha: 1), foreground: .white),
+    makeIcon(background: NSColor(calibratedWhite: 0.97, alpha: 1), foreground: .black),
     named: "AppIcon1024.png"
 )
 

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Resources/AppIcon1024.png" width="96" alt="NightMode icon">
+  <img src="Resources/AppIconLight1024.png" width="96" alt="NightMode icon">
 </p>
 
 <h1 align="center">NightMode</h1>

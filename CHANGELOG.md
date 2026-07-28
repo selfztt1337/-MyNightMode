@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.2 — July 28, 2026
+
+- Fixed the README and generated preview icon by using the light icon asset for GitHub.
+- Kept the in-app icon adaptive: light icon in light appearance and dark icon in dark appearance.
+- Built the app bundle icon from the light icon asset so Finder and Dock previews stay readable.
+
 ## 1.1.1 — July 28, 2026
 
 - Restored transparent macOS app icon assets so the Dock, Finder and in-app appearance render correctly.

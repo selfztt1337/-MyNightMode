@@ -41,7 +41,7 @@ fi
 [[ -x "$BINARY" ]] || { echo "Нет binary: $BINARY"; exit 1; }
 echo "[2/6] App bundle"; rm -rf "$APP"; mkdir -p "$CONTENTS/MacOS" "$CONTENTS/Resources"; install -m 755 "$BINARY" "$CONTENTS/MacOS/$BINARY_NAME"; install -m 644 "$ROOT/Info.plist" "$CONTENTS/Info.plist"
 echo "[3/6] App icon"
-ICONSET="$DIST/AppIcon.iconset"; rm -rf "$ICONSET"; mkdir -p "$ICONSET"; SRC="$ROOT/Resources/AppIcon1024.png"
+ICONSET="$DIST/AppIcon.iconset"; rm -rf "$ICONSET"; mkdir -p "$ICONSET"; SRC="$ROOT/Resources/AppIconLight1024.png"
 while IFS=' ' read -r width height filename; do
   [[ -n "$width" && -n "$height" && -n "$filename" ]] || continue
   sips -z "$height" "$width" "$SRC" --out "$ICONSET/$filename" >/dev/null

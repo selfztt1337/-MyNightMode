@@ -160,7 +160,7 @@ private func drawAppWindow(rect: CGRect, state: UIState, compact: Bool = false) 
     }
 
     rounded(R(34, 60, 54, 54), radius: 14 * s, color: NSColor.black)
-    let appIconPath = FileManager.default.currentDirectoryPath + "/Resources/AppIcon1024.png"
+    let appIconPath = FileManager.default.currentDirectoryPath + "/Resources/AppIconLight1024.png"
     if let appIcon = NSImage(contentsOfFile: appIconPath) {
         appIcon.draw(in: R(34, 60, 54, 54))
     } else {
