@@ -134,7 +134,7 @@ struct OnboardingView: View {
 
             Spacer()
 
-            Text("Обучение всегда доступно через кнопку ? и пункт «Обучение»")
+            Text("Обучение всегда доступно через кнопку «Обучение»")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }

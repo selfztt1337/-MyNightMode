@@ -564,10 +564,10 @@ struct SettingsView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Button {
-                UserDefaults.standard.set(false, forKey: "didFinishOnboarding.v10")
                 NSApplication.shared.activate(ignoringOtherApps: true)
+                NotificationCenter.default.post(name: .showNightModeOnboarding, object: nil)
             } label: {
-                Label("Показать онбординг при следующем открытии", systemImage: "rectangle.on.rectangle")
+                Label("Открыть обучение", systemImage: "questionmark.circle")
             }
             .buttonStyle(.bordered)
         }

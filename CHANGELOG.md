@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.3 — July 28, 2026
+
+- Added a compact onboarding button to the main window header.
+- Settings can now open onboarding immediately instead of waiting for the next launch.
+- Added a Telegram Stories visual asset for the 1.1.x release.
+
 ## 1.1.2 — July 28, 2026
 
 - Fixed the README and generated preview icon by using the light icon asset for GitHub.

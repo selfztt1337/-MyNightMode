@@ -31,6 +31,10 @@ struct ContentView: View {
         }
         .onAppear { selectAvailableDisplay() }
         .onChange(of: model.displays) { selectAvailableDisplay() }
+        .onReceive(NotificationCenter.default.publisher(for: .showNightModeOnboarding)) { _ in
+            didFinishOnboarding = true
+            showOnboarding = true
+        }
     }
 
     private var dashboard: some View {
@@ -102,8 +106,12 @@ struct ContentView: View {
             Button {
                 showOnboarding = true
             } label: {
-                Image(systemName: "questionmark.circle")
-                    .font(.system(size: 17, weight: .medium))
+                Label("Обучение", systemImage: "questionmark.circle")
+                    .font(.caption.weight(.semibold))
+                    .labelStyle(.titleAndIcon)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(.primary.opacity(0.07), in: Capsule())
             }
             .buttonStyle(.plain)
             .help("Открыть краткое обучение")
@@ -452,8 +460,6 @@ struct ContentView: View {
                     .foregroundStyle(.tertiary)
                     .help("Глобальная горячая клавиша включения и выключения")
                 Spacer()
-                Button("Обучение") { showOnboarding = true }
-                    .buttonStyle(.plain)
                 SettingsLink {
                     Label("Настройки", systemImage: "gearshape")
                 }
