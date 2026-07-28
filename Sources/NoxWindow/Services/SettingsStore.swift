@@ -15,7 +15,7 @@ final class SettingsStore: ObservableObject {
         didSet { saveDisplayConfigurations() }
     }
 
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
 
     private enum Keys {
         static let intensity = "intensity.v9"
@@ -29,7 +29,8 @@ final class SettingsStore: ObservableObject {
         static let hotKeyShortcut = "hotKeyShortcut.v11.3"
     }
 
-    init() {
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         intensity = defaults.object(forKey: Keys.intensity) as? Double ?? 0.48
         userMode = UserMode(rawValue: defaults.string(forKey: Keys.userMode) ?? "") ?? .auto
         autoEnable = defaults.object(forKey: Keys.autoEnable) as? Bool ?? true
@@ -71,8 +72,21 @@ final class SettingsStore: ObservableObject {
         displayConfigurations[displayID] = configuration
     }
 
-    func removeConfiguration(for displayID: String) {
-        displayConfigurations.removeValue(forKey: displayID)
+    func updateDisplayConfigurations(
+        for displayIDs: [String],
+        _ update: (inout DisplayConfiguration) -> Void
+    ) {
+        guard !displayIDs.isEmpty else { return }
+        var configurations = displayConfigurations
+
+        for displayID in displayIDs {
+            var configuration = configurations[displayID]
+                ?? displayConfiguration(for: displayID)
+            update(&configuration)
+            configurations[displayID] = configuration
+        }
+
+        displayConfigurations = configurations
     }
 
     func reset() {

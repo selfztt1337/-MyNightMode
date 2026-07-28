@@ -159,23 +159,29 @@ final class OverlayController: ObservableObject {
     private func refreshNow() {
         guard isRunning else { return }
         let app = NSWorkspace.shared.frontmostApplication
+        let automaticProfile = classifier.profile(for: app)
         activeAppName = app?.localizedName ?? "macOS"
         displayBrightness = brightnessReader.currentBrightness()
         sessionMinutes = max(0, Int(Date().timeIntervalSince(sessionStartedAt) / 60.0))
 
         switch settings.userMode {
-        case .auto: activeProfile = classifier.profile(for: app)
+        case .auto: activeProfile = automaticProfile
         case .work: activeProfile = .work
         case .read: activeProfile = .reading
         case .night: activeProfile = .night
         case .play: activeProfile = .gaming
         }
-        applyAppearance()
+        applyAppearance(for: app, automaticProfile: automaticProfile)
     }
 
-    private func applyAppearance() {
+    private func applyAppearance(
+        for app: NSRunningApplication? = NSWorkspace.shared.frontmostApplication,
+        automaticProfile: ActiveProfile? = nil
+    ) {
         guard isRunning else { return }
-        let app = NSWorkspace.shared.frontmostApplication
+        let automaticProfile = automaticProfile ?? classifier.profile(for: app)
+        let hour = Calendar.current.component(.hour, from: Date())
+
         for (displayID, panel) in panels {
             let configuration = settings.displayConfiguration(for: displayID)
             guard configuration.isEnabled else {
@@ -183,7 +189,10 @@ final class OverlayController: ObservableObject {
                 continue
             }
 
-            let profile = profile(for: configuration.mode, app: app)
+            let profile = profile(
+                for: configuration.mode,
+                automaticProfile: automaticProfile
+            )
             let appearance = adaptiveEngine.appearance(
                 profile: profile,
                 intensity: configuration.intensity,
@@ -191,17 +200,11 @@ final class OverlayController: ObservableObject {
                 sessionMinutes: Double(sessionMinutes),
                 paperEnabled: configuration.paperMode,
                 focusEdgesEnabled: configuration.focusEdges,
-                hour: Calendar.current.component(.hour, from: Date())
-            )
-            let color = NSColor(
-                calibratedRed: appearance.red,
-                green: appearance.green,
-                blue: appearance.blue,
-                alpha: 1.0
+                hour: hour
             )
 
             guard let view = panel.contentView as? OverlayView else { continue }
-            view.apply(color: color, alpha: appearance.alpha, paperOpacity: appearance.paperOpacity, edgeOpacity: appearance.edgeOpacity)
+            view.apply(appearance)
             if !panel.isVisible { panel.orderFrontRegardless() }
         }
     }
@@ -221,9 +224,12 @@ final class OverlayController: ObservableObject {
         }
     }
 
-    private func profile(for mode: UserMode, app: NSRunningApplication?) -> ActiveProfile {
+    private func profile(
+        for mode: UserMode,
+        automaticProfile: ActiveProfile
+    ) -> ActiveProfile {
         switch mode {
-        case .auto: return classifier.profile(for: app)
+        case .auto: return automaticProfile
         case .work: return .work
         case .read: return .reading
         case .night: return .night
@@ -254,9 +260,12 @@ private final class PassiveOverlayPanel: NSPanel {
 }
 
 private final class OverlayView: NSView {
+    private static let paperTexture = makePaperTexture()
+
     private let tintLayer = CALayer()
     private let paperLayer = CALayer()
     private let edgeLayer = CAGradientLayer()
+    private var lastAppearance: AdaptiveAppearance?
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -271,7 +280,7 @@ private final class OverlayView: NSView {
         paperLayer.autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
         paperLayer.contentsGravity = .resizeAspectFill
         paperLayer.compositingFilter = "softLightBlendMode"
-        paperLayer.contents = Self.makePaperTexture()
+        paperLayer.contents = Self.paperTexture
         root.addSublayer(paperLayer)
 
         edgeLayer.type = .radial
@@ -300,13 +309,23 @@ private final class OverlayView: NSView {
         edgeLayer.frame = bounds
     }
 
-    func apply(color: NSColor, alpha: Double, paperOpacity: Double, edgeOpacity: Double) {
+    func apply(_ appearance: AdaptiveAppearance) {
+        guard appearance != lastAppearance else { return }
+        lastAppearance = appearance
+
+        let color = NSColor(
+            calibratedRed: appearance.red,
+            green: appearance.green,
+            blue: appearance.blue,
+            alpha: 1.0
+        )
+
         CATransaction.begin()
         CATransaction.setAnimationDuration(0.28)
         CATransaction.setAnimationTimingFunction(CAMediaTimingFunction(name: .easeInEaseOut))
-        tintLayer.backgroundColor = color.withAlphaComponent(alpha).cgColor
-        paperLayer.opacity = Float(paperOpacity)
-        edgeLayer.opacity = Float(edgeOpacity)
+        tintLayer.backgroundColor = color.withAlphaComponent(appearance.alpha).cgColor
+        paperLayer.opacity = Float(appearance.paperOpacity)
+        edgeLayer.opacity = Float(appearance.edgeOpacity)
         CATransaction.commit()
     }
 

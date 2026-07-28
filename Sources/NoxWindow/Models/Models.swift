@@ -113,6 +113,33 @@ enum QuickPreset: String, CaseIterable, Identifiable, Codable {
     }
 }
 
+enum SmartPauseOption {
+    case fifteenMinutes
+    case thirtyMinutes
+    case oneHour
+    case twoHours
+    case tomorrowMorning
+
+    func minutes(from now: Date = Date(), calendar: Calendar = .current) -> Int {
+        switch self {
+        case .fifteenMinutes: return 15
+        case .thirtyMinutes: return 30
+        case .oneHour: return 60
+        case .twoHours: return 120
+        case .tomorrowMorning:
+            let tomorrow = calendar.date(byAdding: .day, value: 1, to: now)
+                ?? now.addingTimeInterval(86_400)
+            let target = calendar.date(
+                bySettingHour: 9,
+                minute: 0,
+                second: 0,
+                of: tomorrow
+            ) ?? tomorrow
+            return max(1, Int(ceil(target.timeIntervalSince(now) / 60)))
+        }
+    }
+}
+
 struct DisplayConfiguration: Codable, Equatable {
     var isEnabled: Bool
     var preset: QuickPreset
@@ -201,7 +228,7 @@ enum ActiveProfile: String {
     }
 }
 
-struct AdaptiveAppearance {
+struct AdaptiveAppearance: Equatable {
     let red: Double
     let green: Double
     let blue: Double

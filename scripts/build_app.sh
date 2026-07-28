@@ -8,7 +8,7 @@ plutil -lint "$ROOT/Info.plist"
 echo "[1/6] Swift build"; swift build -c release --product "$BINARY_NAME"
 BIN_DIR="$(swift build -c release --show-bin-path)"; BINARY="$BIN_DIR/$BINARY_NAME"; [[ -x "$BINARY" ]] || { echo "Нет binary: $BINARY"; exit 1; }
 echo "[2/6] App bundle"; rm -rf "$APP"; mkdir -p "$CONTENTS/MacOS" "$CONTENTS/Resources"; install -m 755 "$BINARY" "$CONTENTS/MacOS/$BINARY_NAME"; install -m 644 "$ROOT/Info.plist" "$CONTENTS/Info.plist"
-echo "[3/6] Resources"; if [[ -d "$BIN_DIR/MyNightMode_MyNightMode.bundle" ]]; then cp -R "$BIN_DIR/MyNightMode_MyNightMode.bundle" "$CONTENTS/Resources/"; fi
+echo "[3/6] App icon"
 ICONSET="$DIST/AppIcon.iconset"; rm -rf "$ICONSET"; mkdir -p "$ICONSET"; SRC="$ROOT/Resources/AppIcon1024.png"
 while IFS=' ' read -r width height filename; do
   [[ -n "$width" && -n "$height" && -n "$filename" ]] || continue

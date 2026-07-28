@@ -198,12 +198,12 @@ struct MenuBarView: View {
             .foregroundStyle(model.isEnabled ? Color.primary : Color.white)
 
             Menu {
-                Button("15 минут") { model.pause(for: 15) }
-                Button("30 минут") { model.pause(for: 30) }
-                Button("1 час") { model.pause(for: 60) }
-                Button("2 часа") { model.pause(for: 120) }
+                Button("15 минут") { model.pause(for: SmartPauseOption.fifteenMinutes.minutes()) }
+                Button("30 минут") { model.pause(for: SmartPauseOption.thirtyMinutes.minutes()) }
+                Button("1 час") { model.pause(for: SmartPauseOption.oneHour.minutes()) }
+                Button("2 часа") { model.pause(for: SmartPauseOption.twoHours.minutes()) }
                 Divider()
-                Button("До завтра, 09:00") { model.pause(for: minutesUntilTomorrowMorning()) }
+                Button("До завтра, 09:00") { model.pause(for: SmartPauseOption.tomorrowMorning.minutes()) }
             } label: {
                 HStack(spacing: 5) {
                     Image(systemName: "timer")
@@ -354,14 +354,6 @@ struct MenuBarView: View {
         )
         .foregroundStyle(isSelected ? Color.white : Color.primary)
         .help("Применить готовый набор настроек")
-    }
-
-    private func minutesUntilTomorrowMorning() -> Int {
-        let calendar = Calendar.current
-        let now = Date()
-        let tomorrow = calendar.date(byAdding: .day, value: 1, to: now) ?? now.addingTimeInterval(86_400)
-        let target = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: tomorrow) ?? tomorrow
-        return max(1, Int(ceil(target.timeIntervalSince(now) / 60)))
     }
 
     private func sectionTitle(_ title: String) -> some View {

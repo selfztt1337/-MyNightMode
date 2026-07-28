@@ -9,7 +9,6 @@ let package = Package(
         .executableTarget(
             name: "MyNightMode",
             path: "Sources/NoxWindow",
-            resources: [.process("Resources")],
             linkerSettings: [
                 .linkedFramework("AppKit"),
                 .linkedFramework("SwiftUI"),

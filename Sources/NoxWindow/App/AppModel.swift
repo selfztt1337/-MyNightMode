@@ -130,10 +130,8 @@ final class AppModel: ObservableObject {
         settings.intensity = preset.intensity
         settings.paperMode = preset.paperMode
         settings.focusEdges = preset.focusEdges
-        for display in displays {
-            settings.updateDisplayConfiguration(for: display.id) {
-                $0.apply(preset)
-            }
+        settings.updateDisplayConfigurations(for: displays.map(\.id)) {
+            $0.apply(preset)
         }
         if enableProtection && !isEnabled {
             resumeNow()
@@ -160,31 +158,17 @@ final class AppModel: ObservableObject {
         }
     }
 
-    func setModeForAllDisplays(_ mode: UserMode) {
-        settings.userMode = mode
-        for display in displays {
-            settings.updateDisplayConfiguration(for: display.id) { $0.mode = mode }
-        }
-    }
-
-    func setIntensityForAllDisplays(_ intensity: Double) {
-        settings.intensity = intensity
-        for display in displays {
-            settings.updateDisplayConfiguration(for: display.id) { $0.intensity = intensity }
-        }
-    }
-
     func setPaperModeForAllDisplays(_ enabled: Bool) {
         settings.paperMode = enabled
-        for display in displays {
-            settings.updateDisplayConfiguration(for: display.id) { $0.paperMode = enabled }
+        settings.updateDisplayConfigurations(for: displays.map(\.id)) {
+            $0.paperMode = enabled
         }
     }
 
     func setFocusEdgesForAllDisplays(_ enabled: Bool) {
         settings.focusEdges = enabled
-        for display in displays {
-            settings.updateDisplayConfiguration(for: display.id) { $0.focusEdges = enabled }
+        settings.updateDisplayConfigurations(for: displays.map(\.id)) {
+            $0.focusEdges = enabled
         }
     }
 
