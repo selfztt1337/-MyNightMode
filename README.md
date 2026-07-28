@@ -86,5 +86,5 @@ MyNightMode не записывает экран, не читает содерж
 
 <p align="center">
   <sub>Made for calmer nights on macOS 🌙</sub><br>
-  <sub>© 2026 <strong>@selfztt1337</strong>. All rights reserved.</sub>
+  <sub>© 2026 MyNightMode contributors.</sub>
 </p>

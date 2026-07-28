@@ -17,11 +17,14 @@ swift build -c release
 ```bash
 ./scripts/test_core_logic.sh
 ./scripts/test_views.sh
+./scripts/audit_repository.sh
 ```
 
-Проверяются пресеты, выбранный пресет после ручной настройки, хоткей, Smart Pause, граничные значения адаптивного эффекта и стабильность одинакового render-state.
+Проверяются пресеты, настройка интенсивности выключенного дисплея, хоткей, Smart Pause, граничные значения адаптивного эффекта и стабильность одинакового render-state.
 
 `test_views.sh` создаёт и layout-ит главное окно, menu bar, настройки и onboarding через `NSHostingView`. Тест не требует Screen Recording или Accessibility.
+
+`audit_repository.sh` проверяет tracked-файлы на локальные пути, персональные маркеры, приватные ключи, типовые токены, editor-конфигурацию и битые локальные ссылки README.
 
 ## Локальный performance benchmark
 

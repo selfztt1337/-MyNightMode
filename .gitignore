@@ -2,4 +2,6 @@
 dist/
 .DS_Store
 *.dmg
-.vscode/*.log
+.vscode/
+.swiftpm/xcode/package.xcworkspace/xcuserdata/
+*.xcuserstate

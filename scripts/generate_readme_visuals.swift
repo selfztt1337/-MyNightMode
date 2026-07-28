@@ -230,7 +230,7 @@ private func drawAppWindow(rect: CGRect, state: UIState, compact: Bool = false) 
 
     symbol("keyboard", x: X(38), y: Y(735), size: 13 * s, color: muted)
     text("⌃⌥⌘N · можно изменить", x: X(58), y: Y(733), size: 10 * s, color: muted)
-    text("© 2026 @selfztt1337", x: X(272), y: Y(733), size: 10 * s, color: muted, width: 220 * s, alignment: .center)
+    text("MyNightMode", x: X(272), y: Y(733), size: 10 * s, color: muted, width: 220 * s, alignment: .center)
     text("Настройки", x: X(638), y: Y(733), size: 11 * s, color: white)
 
     if state.menuProgress > 0 {

@@ -1,9 +1,0 @@
-{
-  "version": "2.0.0",
-  "tasks": [
-    {"label":"1. Build MyNightMode.app","type":"shell","command":"${workspaceFolder}/scripts/build_app.sh","group":{"kind":"build","isDefault":true},"problemMatcher":["$swiftc"]},
-    {"label":"2. Run MyNightMode","type":"shell","command":"${workspaceFolder}/scripts/run_app.sh","problemMatcher":[]},
-    {"label":"3. Create MyNightMode.dmg","type":"shell","command":"${workspaceFolder}/scripts/make_dmg.sh","problemMatcher":[]},
-    {"label":"4. Diagnose","type":"shell","command":"${workspaceFolder}/scripts/diagnose.sh","problemMatcher":[]}
-  ]
-}

@@ -174,7 +174,7 @@ struct MenuBarView: View {
                         model.updateDisplayConfiguration(for: displayID) { $0.intensity = value }
                     }
                 ), in: 0.10...1.0)
-                .disabled(selectedDisplay == nil || selectedConfiguration?.isEnabled == false)
+                .disabled(selectedDisplay == nil)
                 Image(systemName: "sun.max.fill")
                     .foregroundStyle(.secondary)
             }
@@ -272,10 +272,9 @@ struct MenuBarView: View {
             .buttonStyle(.plain)
             .font(.callout)
 
-            Text("© 2026 @selfztt1337")
+            Text("MyNightMode")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
-                .textSelection(.enabled)
         }
     }
 

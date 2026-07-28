@@ -338,7 +338,6 @@ struct SettingsView: View {
                         model.updateDisplayConfiguration(for: display.id) { $0.intensity = value }
                     }
                 ), in: 0.10...1.0)
-                .disabled(!configuration.isEnabled)
                 Image(systemName: "sun.max.fill")
                     .foregroundStyle(.secondary)
                 Text("\(Int(configuration.intensity * 100))%")

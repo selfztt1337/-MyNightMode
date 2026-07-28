@@ -134,7 +134,7 @@ enum BehaviorChecks {
 
     @MainActor
     private static func checkSettingsPersistence() {
-        let suiteName = "com.selfztt1337.MyNightMode.BehaviorChecks"
+        let suiteName = "app.mynightmode.BehaviorChecks"
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
         defer { defaults.removePersistentDomain(forName: suiteName) }
@@ -150,6 +150,9 @@ enum BehaviorChecks {
             $0.apply(.focus)
             $0.isEnabled = false
         }
+        original.updateDisplayConfiguration(for: "external-display") {
+            $0.intensity = 0.73
+        }
         var batchChangeCount = 0
         let batchObserver = original.objectWillChange.sink {
             batchChangeCount += 1
@@ -163,8 +166,11 @@ enum BehaviorChecks {
         let restored = SettingsStore(defaults: defaults)
         let configuration = restored.displayConfiguration(for: "external-display")
         precondition(restored.hotKeyShortcut == shortcut)
-        precondition(configuration.matches(.focus))
         precondition(!configuration.isEnabled)
+        precondition(abs(configuration.intensity - 0.73) < 0.000_001)
+        precondition(configuration.mode == .work)
+        precondition(configuration.paperMode == false)
+        precondition(configuration.focusEdges == true)
         precondition(restored.displayConfiguration(for: "display-a").matches(.reading))
         precondition(restored.displayConfiguration(for: "display-b").matches(.reading))
     }

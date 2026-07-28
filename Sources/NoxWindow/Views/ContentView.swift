@@ -228,7 +228,7 @@ struct ContentView: View {
                         model.updateDisplayConfiguration(for: displayID) { $0.intensity = value }
                     }
                 ), in: 0.10...1.0)
-                .disabled(selectedConfiguration?.isEnabled == false)
+                .disabled(selectedDisplay == nil)
                 Image(systemName: "sun.max.fill")
                     .foregroundStyle(.secondary)
             }
@@ -388,10 +388,9 @@ struct ContentView: View {
                 .buttonStyle(.plain)
             }
 
-            Text("© 2026 @selfztt1337")
+            Text("MyNightMode")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
-                .textSelection(.enabled)
         }
         .font(.callout)
         .padding(.top, 2)
