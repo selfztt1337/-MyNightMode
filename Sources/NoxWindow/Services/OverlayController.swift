@@ -8,6 +8,7 @@ import QuartzCore
 final class OverlayController: ObservableObject {
     @Published private(set) var isRunning = false
     @Published private(set) var activeProfile: ActiveProfile = .neutral
+    @Published private(set) var automaticProfile: ActiveProfile = .neutral
     @Published private(set) var displayBrightness: Double?
     @Published private(set) var activeAppName = "macOS"
     @Published private(set) var sessionMinutes: Int = 0
@@ -22,6 +23,9 @@ final class OverlayController: ObservableObject {
     private var subscriptions = Set<AnyCancellable>()
     private var observers: [NSObjectProtocol] = []
     private var sessionStartedAt = Date()
+    private var previewConfiguration: (displayID: String, value: DisplayConfiguration)?
+    private var previewTask: Task<Void, Never>?
+    private var previewStartedProtection = false
 
     init(settings: SettingsStore) {
         self.settings = settings
@@ -69,6 +73,28 @@ final class OverlayController: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
+            Task { @MainActor in
+                guard let self else { return }
+                self.isRunning ? self.rebuildPanels() : self.refreshDisplayList()
+            }
+        })
+
+        observers.append(NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                guard let self else { return }
+                self.isRunning ? self.rebuildPanels() : self.refreshDisplayList()
+            }
+        })
+
+        observers.append(NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.activeSpaceDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
             Task { @MainActor in self?.refreshNow() }
         })
 
@@ -90,7 +116,7 @@ final class OverlayController: ObservableObject {
         rebuildPanels()
         refreshNow()
 
-        let timer = Timer(timeInterval: 2.0, repeats: true) { [weak self] _ in
+        let timer = Timer(timeInterval: 5.0, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.refreshNow() }
         }
         self.timer = timer
@@ -98,6 +124,10 @@ final class OverlayController: ObservableObject {
     }
 
     func stop() {
+        previewTask?.cancel()
+        previewTask = nil
+        previewConfiguration = nil
+        previewStartedProtection = false
         timer?.invalidate()
         timer = nil
         panels.values.forEach { $0.orderOut(nil); $0.close() }
@@ -108,6 +138,90 @@ final class OverlayController: ObservableObject {
 
     func toggle() {
         isRunning ? stop() : start()
+    }
+
+    func preview(
+        _ configuration: DisplayConfiguration,
+        on displayID: String,
+        duration: TimeInterval = 8
+    ) {
+        guard duration > 0 else { return }
+        previewTask?.cancel()
+        if !isRunning {
+            previewStartedProtection = true
+            start()
+        }
+
+        var preview = configuration
+        preview.isEnabled = true
+        previewConfiguration = (displayID, preview)
+        refreshNow()
+
+        previewTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                guard let self else { return }
+                let shouldStop = self.previewStartedProtection
+                self.previewConfiguration = nil
+                self.previewTask = nil
+                self.previewStartedProtection = false
+                if shouldStop {
+                    self.stop()
+                } else {
+                    self.refreshNow()
+                }
+            }
+        }
+    }
+
+    func diagnostics() -> [DisplayDiagnostic] {
+        NSScreen.screens.map { screen in
+            let id = Self.identifier(for: screen)
+            let panelFrame = panels[id]?.frame
+            return DisplayDiagnostic(
+                id: id,
+                name: screen.localizedName,
+                frame: Self.rectDescription(screen.frame),
+                visibleFrame: Self.rectDescription(screen.visibleFrame),
+                scaleFactor: screen.backingScaleFactor,
+                overlayFrame: panelFrame.map(Self.rectDescription),
+                overlayIsVisible: panels[id]?.isVisible == true,
+                coversFullFrame: panelFrame.map {
+                    DisplayGeometry.fullyCovers(overlay: $0, display: screen.frame)
+                } ?? false
+            )
+        }
+    }
+
+    func highlightDisplays() {
+        for screen in NSScreen.screens {
+            let panel = DiagnosticOverlayPanel(
+                contentRect: screen.frame,
+                styleMask: [.borderless, .nonactivatingPanel],
+                backing: .buffered,
+                defer: false,
+                screen: screen
+            )
+            panel.setFrame(screen.frame, display: false)
+            panel.level = .floating
+            panel.backgroundColor = .clear
+            panel.isOpaque = false
+            panel.hasShadow = false
+            panel.ignoresMouseEvents = true
+            panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
+            panel.contentView = DiagnosticHighlightView(
+                frame: CGRect(origin: .zero, size: screen.frame.size),
+                displayName: screen.localizedName
+            )
+            panel.orderFrontRegardless()
+
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 1_200_000_000)
+                panel.orderOut(nil)
+                panel.close()
+            }
+        }
     }
 
     private func rebuildPanels() {
@@ -160,17 +274,17 @@ final class OverlayController: ObservableObject {
         guard isRunning else { return }
         let app = NSWorkspace.shared.frontmostApplication
         let automaticProfile = classifier.profile(for: app)
+        self.automaticProfile = automaticProfile
         activeAppName = app?.localizedName ?? "macOS"
-        displayBrightness = brightnessReader.currentBrightness()
+        let mainDisplayID = NSScreen.main.flatMap(Self.displayID(for:))
+        displayBrightness = brightnessReader.currentBrightness(for: mainDisplayID)
         sessionMinutes = max(0, Int(Date().timeIntervalSince(sessionStartedAt) / 60.0))
 
-        switch settings.userMode {
-        case .auto: activeProfile = automaticProfile
-        case .work: activeProfile = .work
-        case .read: activeProfile = .reading
-        case .night: activeProfile = .night
-        case .play: activeProfile = .gaming
-        }
+        let mainMode = NSScreen.main
+            .map(Self.identifier(for:))
+            .map(settings.displayConfiguration(for:))?
+            .mode ?? settings.userMode
+        activeProfile = profile(for: mainMode, automaticProfile: automaticProfile)
         applyAppearance(for: app, automaticProfile: automaticProfile)
     }
 
@@ -183,7 +297,16 @@ final class OverlayController: ObservableObject {
         let hour = Calendar.current.component(.hour, from: Date())
 
         for (displayID, panel) in panels {
-            let configuration = settings.displayConfiguration(for: displayID)
+            if previewStartedProtection, previewConfiguration?.displayID != displayID {
+                panel.orderOut(nil)
+                continue
+            }
+            let configuration: DisplayConfiguration
+            if let previewConfiguration, previewConfiguration.displayID == displayID {
+                configuration = previewConfiguration.value
+            } else {
+                configuration = settings.displayConfiguration(for: displayID)
+            }
             guard configuration.isEnabled else {
                 panel.orderOut(nil)
                 continue
@@ -193,14 +316,25 @@ final class OverlayController: ObservableObject {
                 for: configuration.mode,
                 automaticProfile: automaticProfile
             )
+            let automaticTuning = adaptiveEngine.automaticTuning(profile: profile, hour: hour)
+            let isAutomatic = configuration.mode == .auto
+            let directDisplayID = NSScreen.screens
+                .first(where: { Self.identifier(for: $0) == displayID })
+                .flatMap(Self.displayID(for:))
+            let screenBrightness = directDisplayID.flatMap {
+                brightnessReader.currentBrightness(for: $0)
+            }
             let appearance = adaptiveEngine.appearance(
                 profile: profile,
                 intensity: configuration.intensity,
-                displayBrightness: displayBrightness,
+                displayBrightness: screenBrightness,
                 sessionMinutes: Double(sessionMinutes),
-                paperEnabled: configuration.paperMode,
-                focusEdgesEnabled: configuration.focusEdges,
-                hour: hour
+                paperEnabled: isAutomatic ? automaticTuning.paperEnabled : configuration.paperMode,
+                focusEdgesEnabled: isAutomatic ? automaticTuning.focusEdgesEnabled : configuration.focusEdges,
+                hour: hour,
+                focusIntensity: isAutomatic ? automaticTuning.focusIntensity : configuration.focusIntensity,
+                warmth: isAutomatic ? automaticTuning.warmth : configuration.warmth,
+                paperIntensity: isAutomatic ? automaticTuning.paperIntensity : configuration.paperIntensity
             )
 
             guard let view = panel.contentView as? OverlayView else { continue }
@@ -219,9 +353,17 @@ final class OverlayController: ObservableObject {
                 id: Self.identifier(for: screen),
                 name: screen.localizedName,
                 resolution: "\(width) × \(height)",
-                isBuiltIn: displayID.map(CGDisplayIsBuiltin) == 1
+                isBuiltIn: displayID.map(CGDisplayIsBuiltin) == 1,
+                frameDescription: Self.rectDescription(screen.frame),
+                visibleFrameDescription: Self.rectDescription(screen.visibleFrame),
+                scaleFactor: scale
             )
         }
+    }
+
+    private static func rectDescription(_ rect: CGRect) -> String {
+        "x \(Int(rect.origin.x)), y \(Int(rect.origin.y)), "
+            + "\(Int(rect.width)) × \(Int(rect.height)) pt"
     }
 
     private func profile(
@@ -256,6 +398,43 @@ private final class PassiveOverlayPanel: NSPanel {
 
     override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect {
         frameRect
+    }
+}
+
+private final class DiagnosticOverlayPanel: NSPanel {
+    override var canBecomeKey: Bool { false }
+    override var canBecomeMain: Bool { false }
+}
+
+private final class DiagnosticHighlightView: NSView {
+    private let displayName: String
+
+    init(frame frameRect: NSRect, displayName: String) {
+        self.displayName = displayName
+        super.init(frame: frameRect)
+        wantsLayer = true
+        layer?.borderWidth = 8
+        layer?.borderColor = NSColor.systemPink.cgColor
+        layer?.backgroundColor = NSColor.systemPink.withAlphaComponent(0.06).cgColor
+    }
+
+    required init?(coder: NSCoder) {
+        nil
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        let text = displayName as NSString
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: 28, weight: .semibold),
+            .foregroundColor: NSColor.white,
+            .backgroundColor: NSColor.black.withAlphaComponent(0.72)
+        ]
+        let size = text.size(withAttributes: attributes)
+        text.draw(
+            at: CGPoint(x: (bounds.width - size.width) / 2, y: (bounds.height - size.height) / 2),
+            withAttributes: attributes
+        )
     }
 }
 
@@ -321,7 +500,9 @@ private final class OverlayView: NSView {
         )
 
         CATransaction.begin()
-        CATransaction.setAnimationDuration(0.28)
+        CATransaction.setAnimationDuration(
+            NSWorkspace.shared.accessibilityDisplayShouldReduceMotion ? 0 : 0.28
+        )
         CATransaction.setAnimationTimingFunction(CAMediaTimingFunction(name: .easeInEaseOut))
         tintLayer.backgroundColor = color.withAlphaComponent(appearance.alpha).cgColor
         paperLayer.opacity = Float(appearance.paperOpacity)

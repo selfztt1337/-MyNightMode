@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SDK_PATH="${SDKROOT:-$(xcrun --sdk macosx --show-sdk-path)}"
-OUTPUT="${TMPDIR:-/tmp}/mynightmode-view-smoke-checks"
+OUTPUT="${TMPDIR:-/tmp}/nightmode-view-smoke-checks"
 MODULE_CACHE="$ROOT/.build/local-cache/clang"
 
 mkdir -p "$MODULE_CACHE"
@@ -21,6 +21,7 @@ xcrun swiftc \
     "$ROOT/Sources/NoxWindow/Services/LoginItemManager.swift" \
     "$ROOT/Sources/NoxWindow/Services/OverlayController.swift" \
     "$ROOT/Sources/NoxWindow/Services/SettingsStore.swift" \
+    "$ROOT/Sources/NoxWindow/Views/BrandFooterView.swift" \
     "$ROOT/Sources/NoxWindow/Views/ContentView.swift" \
     "$ROOT/Sources/NoxWindow/Views/HotKeyRecorderView.swift" \
     "$ROOT/Sources/NoxWindow/Views/MenuBarView.swift" \

@@ -1,4 +1,4 @@
-# MyNightMode Brand Guide
+# NightMode Brand Guide
 
 **Calm screen. Better focus.**
 

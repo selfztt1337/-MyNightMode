@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OnboardingView: View {
     @EnvironmentObject private var model: AppModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let finish: () -> Void
     @State private var page = 0
 
@@ -10,7 +11,7 @@ struct OnboardingView: View {
             symbol: "sparkles",
             eyebrow: "AI AUTO",
             title: "Включи и забудь о настройках",
-            text: "MyNightMode сам выбирает профиль по активному приложению, яркости, времени суток и длительности работы. Нажми «Почему AI?» в интерфейсе, чтобы увидеть логику выбора."
+            text: "NightMode сам выбирает профиль по активному приложению, яркости, времени суток и длительности работы. Нажми «Почему AI?» в интерфейсе, чтобы увидеть логику выбора."
         ),
         OnboardingPage(
             symbol: "slider.horizontal.3",
@@ -34,7 +35,7 @@ struct OnboardingView: View {
             symbol: "timer",
             eyebrow: "SMART PAUSE",
             title: "Пауза без риска забыть включить обратно",
-            text: "Через кнопку с таймером эффект можно остановить на 15, 30 или 60 минут. Затем MyNightMode автоматически продолжит работу."
+            text: "Через кнопку с таймером эффект можно остановить на 15, 30 или 60 минут. Затем NightMode автоматически продолжит работу."
         ),
         OnboardingPage(
             symbol: "lock.shield",
@@ -112,7 +113,7 @@ struct OnboardingView: View {
             HStack(spacing: 10) {
                 if page > 0 {
                     Button("Назад") {
-                        withAnimation(.easeInOut(duration: 0.2)) { page -= 1 }
+                        move(to: page - 1)
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.large)
@@ -122,7 +123,7 @@ struct OnboardingView: View {
                     if page == pages.count - 1 {
                         finish()
                     } else {
-                        withAnimation(.easeInOut(duration: 0.2)) { page += 1 }
+                        move(to: page + 1)
                     }
                 }
                 .buttonStyle(.borderedProminent)
@@ -138,6 +139,29 @@ struct OnboardingView: View {
                 .foregroundStyle(.tertiary)
         }
         .padding(26)
+        .background {
+            TrackpadPagingView { direction in
+                move(to: page + direction)
+            }
+        }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 35)
+                .onEnded { value in
+                    guard abs(value.translation.width) > abs(value.translation.height),
+                          abs(value.translation.width) >= 55 else { return }
+                    move(to: page + (value.translation.width < 0 ? 1 : -1))
+                }
+        )
+    }
+
+    private func move(to target: Int) {
+        let next = min(max(target, 0), pages.count - 1)
+        guard next != page else { return }
+        if reduceMotion {
+            page = next
+        } else {
+            withAnimation(.easeInOut(duration: 0.2)) { page = next }
+        }
     }
 }
 
@@ -146,4 +170,81 @@ private struct OnboardingPage {
     let eyebrow: String
     let title: String
     let text: String
+}
+
+private struct TrackpadPagingView: NSViewRepresentable {
+    let onPage: (Int) -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onPage: onPage)
+    }
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        context.coordinator.install(for: view)
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        context.coordinator.onPage = onPage
+        context.coordinator.observedView = nsView
+    }
+
+    static func dismantleNSView(_ nsView: NSView, coordinator: Coordinator) {
+        coordinator.uninstall()
+    }
+
+    final class Coordinator {
+        weak var observedView: NSView?
+        var onPage: (Int) -> Void
+        private var monitor: Any?
+        private var accumulatedX: CGFloat = 0
+        private var didTrigger = false
+
+        init(onPage: @escaping (Int) -> Void) {
+            self.onPage = onPage
+        }
+
+        func install(for view: NSView) {
+            observedView = view
+            monitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { [weak self] event in
+                self?.handle(event)
+                return event
+            }
+        }
+
+        func uninstall() {
+            if let monitor { NSEvent.removeMonitor(monitor) }
+            monitor = nil
+        }
+
+        private func handle(_ event: NSEvent) {
+            guard let observedView,
+                  observedView.window != nil,
+                  event.window === observedView.window,
+                  event.phase != .mayBegin,
+                  abs(event.scrollingDeltaX) > abs(event.scrollingDeltaY) else { return }
+
+            if event.phase == .began {
+                accumulatedX = 0
+                didTrigger = false
+            }
+            guard !didTrigger, event.momentumPhase == [] else { return }
+
+            accumulatedX += event.scrollingDeltaX
+            if abs(accumulatedX) >= 45 {
+                didTrigger = true
+                onPage(accumulatedX > 0 ? 1 : -1)
+            }
+
+            if event.phase == .ended || event.phase == .cancelled {
+                accumulatedX = 0
+                didTrigger = false
+            }
+        }
+
+        deinit {
+            uninstall()
+        }
+    }
 }

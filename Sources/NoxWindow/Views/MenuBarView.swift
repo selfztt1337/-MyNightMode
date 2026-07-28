@@ -24,16 +24,18 @@ struct MenuBarView: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            Image(systemName: model.activeProfile.symbol)
+            Image(systemName: selectedActiveProfile.symbol)
                 .font(.system(size: 16, weight: .semibold))
                 .frame(width: 38, height: 38)
                 .background(.primary.opacity(0.08), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
 
             VStack(alignment: .leading, spacing: 3) {
-                Text("MyNightMode")
+                Text(selectedDisplay.map { "\($0.name) · \(selectedConfiguration?.mode.title ?? "AI")" } ?? "NightMode")
                     .font(.headline)
+                    .lineLimit(1)
 
-                Text(model.isEnabled ? "\(model.activeProfile.rawValue) · \(model.activeAppName)" : "Защита выключена")
+                Text(model.scheduleStatusText
+                     ?? (model.isEnabled ? "\(selectedActiveProfile.rawValue) · \(model.activeAppName)" : "Защита выключена"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -68,6 +70,7 @@ struct MenuBarView: View {
             }
             .labelsHidden()
             .frame(maxWidth: .infinity)
+            .accessibilityLabel("Выбранный дисплей")
 
             if selectedDisplay != nil {
                 Toggle("Эффект на этом дисплее", isOn: displayBinding(\.isEnabled))
@@ -88,7 +91,7 @@ struct MenuBarView: View {
                 ForEach(UserMode.allCases) { mode in
                     Button {
                         guard let displayID = selectedDisplay?.id else { return }
-                        model.updateDisplayConfiguration(for: displayID) { $0.mode = mode }
+                        model.setMode(mode, for: displayID)
                     } label: {
                         VStack(spacing: 4) {
                             Image(systemName: mode.symbol)
@@ -106,10 +109,19 @@ struct MenuBarView: View {
                         in: RoundedRectangle(cornerRadius: 9, style: .continuous)
                     )
                     .foregroundStyle(selectedConfiguration?.mode == mode ? Color.white : Color.primary)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 9, style: .continuous)
+                            .stroke(
+                                selectedConfiguration?.mode == mode ? Color.white.opacity(0.7) : Color.clear,
+                                lineWidth: 1.5
+                            )
+                    }
+                    .accessibilityLabel("Режим \(mode.title)")
+                    .accessibilityValue(selectedConfiguration?.mode == mode ? "Выбран" : "Не выбран")
                     .help(modeHelp(mode))
                 }
             }
-            .disabled(selectedDisplay == nil || selectedConfiguration?.isEnabled == false)
+            .disabled(selectedDisplay == nil)
         }
     }
 
@@ -118,26 +130,42 @@ struct MenuBarView: View {
             HStack {
                 sectionTitle("Быстрые пресеты")
                 Spacer()
-                Text("1 клик")
+                Text(selectedConfiguration?.mode == .auto
+                     ? "Автоподбор"
+                     : (selectedConfiguration?.presetLabel(customPresets: model.settings.customPresets) ?? "1 клик"))
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
+                    .lineLimit(1)
             }
 
-            HStack(spacing: 7) {
-                ForEach(QuickPreset.allCases) { preset in
-                    presetButton(
-                        preset.title,
-                        symbol: preset.symbol,
-                        isSelected: selectedConfiguration?.matches(preset) == true
-                    ) {
-                        if let displayID = selectedDisplay?.id {
-                            model.apply(preset, to: displayID)
-                        } else {
-                            model.apply(preset)
+            if selectedConfiguration?.mode == .auto {
+                Text("AI управляет профилем автоматически")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 7) {
+                    ForEach(model.presetItems) { item in
+                        presetButton(
+                            item.title,
+                            symbol: item.symbol,
+                            isSelected: selectedConfiguration.map(item.matches) == true
+                        ) {
+                            if NSEvent.modifierFlags.contains(.option) {
+                                model.applyToAll(item)
+                            } else if let displayID = selectedDisplay?.id {
+                                model.apply(item, to: displayID)
+                            } else {
+                                model.applyToAll(item)
+                            }
                         }
+                        .disabled(selectedConfiguration?.mode == .auto)
                     }
                 }
             }
+            .opacity(selectedConfiguration?.mode == .auto ? 0.55 : 1)
+            .help("Option-клик по пресету применяет его ко всем дисплеям")
         }
     }
 
@@ -175,6 +203,7 @@ struct MenuBarView: View {
                     }
                 ), in: 0.10...1.0)
                 .disabled(selectedDisplay == nil)
+                .accessibilityLabel("Сила эффекта")
                 Image(systemName: "sun.max.fill")
                     .foregroundStyle(.secondary)
             }
@@ -217,6 +246,7 @@ struct MenuBarView: View {
             .menuStyle(.borderlessButton)
             .menuIndicator(.hidden)
             .fixedSize()
+            .accessibilityLabel("Выбрать длительность Smart Pause")
             .help("Smart Pause: временно выключить эффект")
             .disabled(!model.isEnabled && !model.isTemporarilyPaused)
         }
@@ -225,6 +255,12 @@ struct MenuBarView: View {
     private var comfortSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionTitle("Дополнительный комфорт")
+
+            if selectedConfiguration?.mode == .auto {
+                Text("Paper Mode и фокус настраивает AI")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
 
             comfortRow(
                 title: "Paper Mode",
@@ -253,7 +289,30 @@ struct MenuBarView: View {
                 ),
                 help: .focus
             )
+
+            if selectedConfiguration?.focusEdges == true {
+                HStack {
+                    Label("Интенсивность фокуса", systemImage: "scope")
+                        .font(.caption)
+                    Slider(
+                        value: Binding(
+                            get: { selectedConfiguration?.focusIntensity ?? 0.45 },
+                            set: { value in
+                                guard let id = selectedDisplay?.id else { return }
+                                model.updateDisplayConfiguration(for: id) { $0.focusIntensity = value }
+                            }
+                        ),
+                        in: 0.10...1.0
+                    )
+                    .accessibilityLabel("Интенсивность фокуса по краям")
+                    Text("\(Int((selectedConfiguration?.focusIntensity ?? 0.45) * 100))%")
+                        .font(.caption2.monospacedDigit())
+                        .frame(width: 32)
+                }
+            }
         }
+        .disabled(selectedConfiguration?.mode == .auto)
+        .opacity(selectedConfiguration?.mode == .auto ? 0.55 : 1)
     }
 
     private var footer: some View {
@@ -272,9 +331,7 @@ struct MenuBarView: View {
             .buttonStyle(.plain)
             .font(.callout)
 
-            Text("MyNightMode")
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
+            BrandFooterView(compact: true)
         }
     }
 
@@ -342,7 +399,7 @@ struct MenuBarView: View {
                     .font(.caption2.weight(.medium))
                     .lineLimit(1)
             }
-            .frame(maxWidth: .infinity)
+            .frame(width: 76)
             .padding(.vertical, 8)
             .contentShape(Rectangle())
         }
@@ -352,6 +409,11 @@ struct MenuBarView: View {
             in: RoundedRectangle(cornerRadius: 9, style: .continuous)
         )
         .foregroundStyle(isSelected ? Color.white : Color.primary)
+        .overlay {
+            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                .stroke(isSelected ? Color.white.opacity(0.7) : Color.clear, lineWidth: 1.5)
+        }
+        .accessibilityValue(isSelected ? "Выбран" : "Не выбран")
         .help("Применить готовый набор настроек")
     }
 
@@ -368,6 +430,10 @@ struct MenuBarView: View {
     private var selectedConfiguration: DisplayConfiguration? {
         guard let displayID = selectedDisplay?.id else { return nil }
         return model.displayConfiguration(for: displayID)
+    }
+
+    private var selectedActiveProfile: ActiveProfile {
+        model.activeProfile(for: selectedDisplay?.id)
     }
 
     private var selectedIntensity: Double {

@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "MyNightMode",
+    name: "NightMode",
     platforms: [.macOS(.v14)],
-    products: [.executable(name: "MyNightMode", targets: ["MyNightMode"])],
+    products: [.executable(name: "NightMode", targets: ["NightMode"])],
     targets: [
         .executableTarget(
-            name: "MyNightMode",
+            name: "NightMode",
             path: "Sources/NoxWindow",
             linkerSettings: [
                 .linkedFramework("AppKit"),

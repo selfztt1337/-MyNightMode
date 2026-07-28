@@ -1,7 +1,16 @@
 .build/
 dist/
 .DS_Store
+DerivedData/
+*.log
 *.dmg
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.mobileprovision
 .vscode/
 .swiftpm/xcode/package.xcworkspace/xcuserdata/
+*.xcuserdata/
 *.xcuserstate

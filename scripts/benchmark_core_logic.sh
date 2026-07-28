@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SDK_PATH="${SDKROOT:-$(xcrun --sdk macosx --show-sdk-path)}"
-OUTPUT="${TMPDIR:-/tmp}/mynightmode-performance-checks"
+OUTPUT="${TMPDIR:-/tmp}/nightmode-performance-checks"
 MODULE_CACHE="$ROOT/.build/local-cache/clang"
 
 mkdir -p "$MODULE_CACHE"

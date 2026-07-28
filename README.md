@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="Resources/AppIcon1024.png" width="96" alt="MyNightMode icon">
+  <img src="Resources/AppIcon1024.png" width="96" alt="NightMode icon">
 </p>
 
-<h1 align="center">MyNightMode</h1>
+<h1 align="center">NightMode</h1>
 
 <p align="center">
   <strong>Адаптивный ночной режим для macOS.</strong><br>
@@ -16,26 +16,24 @@
 </p>
 
 <p align="center">
-  <img src="Docs/showcase/hero.png" alt="MyNightMode on macOS">
+  <img src="Docs/showcase/hero.png" alt="NightMode on macOS">
 </p>
 
 ## Что делает
 
-- **AI Auto** подбирает профиль под активное приложение, время и яркость.
-- **Paper Mode** смягчает белые поверхности в документах, браузере и таблицах.
-- **Focus Edges** слегка затемняет периферию и оставляет центр спокойнее.
-- **Smart Pause** отключает эффект на 15–120 минут или до завтра 09:00.
-- **Быстрые пресеты** переключают готовые сценарии в один клик.
-- **Настройки по дисплеям** позволяют независимо выбрать режим, пресет и силу эффекта для каждого монитора.
-- Работает локально, без Screen Recording и Accessibility.
+- **AI Auto** подбирает комфортное изображение с учётом активного приложения, яркости, времени суток и длительности работы.
+- **Профили дисплеев** сохраняют отдельные параметры для каждого монитора.
+- **Готовые и пользовательские пресеты** переключают сценарий в один клик.
+- **Paper Mode и Focus Edges** смягчают белый фон и уменьшают визуальный шум.
+- **Расписание** автоматически включает нужный режим утром, вечером или от заката до рассвета.
+- **Smart Pause и свой хоткей** позволяют быстро остановить или вернуть эффект.
+- Всё работает локально, без записи экрана и отправки данных.
 
 ## Интерфейс
 
 <p align="center">
-  <img src="Docs/assets/interface-current.gif" width="760" alt="MyNightMode: выбор режима, пресета, интенсивности и Smart Pause">
+  <img src="Docs/assets/interface-current.gif" width="760" alt="NightMode: выбор режима, пресета, интенсивности и Smart Pause">
 </p>
-
-Плавная демонстрация показывает основной путь: выбор режима и пресета, настройку силы эффекта и запуск Smart Pause. Весь интерфейс остаётся в кадре.
 
 ## Комфорт при чтении и работе
 
@@ -43,48 +41,43 @@
   <img src="Docs/showcase/comfort-modes.gif" alt="Paper Mode and Focus Edges demonstration">
 </p>
 
-## Управление и Smart Pause
+## Основные возможности
 
 <p align="center">
-  <img src="Docs/showcase/smart-pause.png" alt="MyNightMode: отдельные настройки дисплеев, свой хоткей и Smart Pause">
+  <img src="Docs/showcase/smart-pause.png" alt="NightMode: отдельные настройки дисплеев, свой хоткей и Smart Pause">
 </p>
 
-- Отдельные режим, пресет и интенсивность для каждого подключённого дисплея.
-- Назначаемая пользователем глобальная горячая клавиша.
-- Smart Pause на 15, 30, 60 или 120 минут — либо до завтра, 09:00.
+- Выберите дисплей и настройте режим, пресет и интенсивность.
+- В AI-режиме параметры подбираются автоматически.
+- Создайте до пяти собственных пресетов и проверьте их до сохранения.
+- При необходимости поставьте эффект на паузу или назначьте свой хоткей.
 
-## Сборка
+## Установка
 
-Требования: macOS 14+ и Xcode Command Line Tools.
+1. Скачайте `NightMode.app` или `.dmg` из раздела **Releases**:
+   [github.com/selfztt1337/-MyNightMode/releases](https://github.com/selfztt1337/-MyNightMode/releases).
+2. Если скачали `.dmg`, откройте его.
+3. Переместите `NightMode.app` в папку **Applications** / «Программы».
+4. Запустите NightMode из **Applications**.
+5. Если macOS покажет предупреждение для локально подписанной сборки, откройте **Системные настройки → Конфиденциальность и безопасность** и подтвердите запуск.
+
+NightMode не требует разрешений **Screen Recording** и **Accessibility**.
+
+Для самостоятельной сборки нужны macOS 14+ и Xcode Command Line Tools:
+
 
 ```bash
 chmod +x scripts/*.sh
 ./scripts/build_app.sh
 ```
 
-Готовое приложение появится в:
-
-```text
-dist/MyNightMode.app
-```
-
-## Управление
-
-- Выберите дисплей в главном окне или menu bar — все параметры ниже применяются именно к нему
-- Активный быстрый пресет подсвечивается; ручное изменение его параметров снимает подсветку
-- Главное окно и menu bar используют одинаковое компактное управление Smart Pause
-- Горячую клавишу включения и выключения можно назначить самостоятельно в настройках
-- `⌃⌥⌘N` — сочетание по умолчанию
-- `?` — открыть обучение
-- `ⓘ` — объяснение конкретной функции
-
-Overlay каждого дисплея покрывает всю его площадь, не перехватывает мышь или клавиатуру и работает во всех Spaces. MyNightMode не меняет настройки Dock и не перекрывает системный интерфейс.
+Подробности: [BUILD.md](BUILD.md) · [TESTING.md](TESTING.md) · [PRIVACY.md](PRIVACY.md)
 
 ## Приватность
 
-MyNightMode не записывает экран, не читает содержимое окон и не отправляет данные в облако.
+NightMode не записывает экран, не читает содержимое окон и не отправляет данные в облако.
 
 <p align="center">
-  <sub>Made for calmer nights on macOS 🌙</sub><br>
-  <sub>© 2026 MyNightMode contributors.</sub>
+  <sub><a href="https://github.com/selfztt1337/-MyNightMode">GitHub</a> · <a href="https://t.me/selfztt1337">Telegram</a> · @selfztt1337</sub><br>
+  <sub>Made for calmer nights on macOS 🌙</sub>
 </p>

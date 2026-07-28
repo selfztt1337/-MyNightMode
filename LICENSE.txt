@@ -1,4 +1,4 @@
 Personal Use License
-Copyright © 2026 MyNightMode contributors
+Copyright © 2026 NightMode contributors
 
 Permission is granted for personal, non-commercial use and modification. Redistribution or commercial use requires written permission from the copyright holder.

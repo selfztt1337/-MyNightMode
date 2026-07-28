@@ -166,7 +166,7 @@ private func drawAppWindow(rect: CGRect, state: UIState, compact: Bool = false) 
     } else {
         text("◈", x: X(43), y: Y(65), size: 32 * s, weight: .bold, width: 36 * s, alignment: .center)
     }
-    text("MyNightMode", x: X(106), y: Y(64), size: 27 * s, weight: .semibold)
+    text("NightMode", x: X(106), y: Y(64), size: 27 * s, weight: .semibold)
     text("Night work, without the glare", x: X(106), y: Y(94), size: 13 * s, color: muted)
     symbol("gearshape", x: X(676), y: Y(70), size: 18 * s, color: muted)
     symbol("info.circle", x: X(716), y: Y(70), size: 18 * s, color: muted)
@@ -174,7 +174,7 @@ private func drawAppWindow(rect: CGRect, state: UIState, compact: Bool = false) 
     rounded(R(34, 132, 692, 72), radius: 14 * s, color: cardSoft)
     symbol("display", x: X(54), y: Y(153), size: 28 * s)
     text("Обычный", x: X(98), y: Y(146), size: 18 * s, weight: .semibold)
-    text("MyNightMode · яркость авто · только что", x: X(98), y: Y(174), size: 12 * s, color: muted)
+    text("NightMode · яркость авто · только что", x: X(98), y: Y(174), size: 12 * s, color: muted)
     toggle(x: X(658), y: Y(154), on: true, scale: s)
 
     rounded(R(34, 218, 692, 50), radius: 12 * s, color: cardSoft)
@@ -230,7 +230,7 @@ private func drawAppWindow(rect: CGRect, state: UIState, compact: Bool = false) 
 
     symbol("keyboard", x: X(38), y: Y(735), size: 13 * s, color: muted)
     text("⌃⌥⌘N · можно изменить", x: X(58), y: Y(733), size: 10 * s, color: muted)
-    text("MyNightMode", x: X(272), y: Y(733), size: 10 * s, color: muted, width: 220 * s, alignment: .center)
+    text("GitHub  ·  Telegram  ·  @selfztt1337", x: X(248), y: Y(733), size: 10 * s, color: muted, width: 260 * s, alignment: .center)
     text("Настройки", x: X(638), y: Y(733), size: 11 * s, color: white)
 
     if state.menuProgress > 0 {
@@ -254,7 +254,7 @@ private func drawAppWindow(rect: CGRect, state: UIState, compact: Bool = false) 
 private func hero() -> NSImage {
     image(size: CGSize(width: 1800, height: 1000)) { bounds in
         background(bounds)
-        text("MyNightMode", x: 100, y: 342, size: 67, weight: .bold)
+        text("NightMode", x: 100, y: 342, size: 67, weight: .bold)
         text("Спокойный экран для долгой работы", x: 102, y: 440, size: 29, color: muted)
         text("вечером и ночью.", x: 102, y: 482, size: 29, color: muted)
         text("AI Auto  ·  Multi-display  ·  Smart Pause", x: 102, y: 560, size: 18, weight: .semibold)
@@ -321,17 +321,18 @@ private func featureOverview() -> NSImage {
         text("Новые функции в одном спокойном потоке.", x: 82, y: 172, size: 21, color: muted, width: 530)
 
         let items = [
-            ("display.2", "Каждый дисплей", "Свой режим, пресет и интенсивность"),
-            ("keyboard", "Свой хоткей", "Назначается прямо в настройках"),
-            ("timer", "Smart Pause", "15–120 минут или до завтра, 09:00")
+            ("display.2", "Профили дисплеев", "Режим и эффект сохраняются отдельно"),
+            ("clock.badge.checkmark", "Умное расписание", "По времени или от заката до рассвета"),
+            ("slider.horizontal.3", "Свои пресеты", "До пяти сценариев с предпросмотром"),
+            ("keyboard", "Хоткей и Smart Pause", "Своя клавиша и безопасная пауза")
         ]
         for (index, item) in items.enumerated() {
-            let y = 228 + CGFloat(index) * 170
-            rounded(CGRect(x: 82, y: y, width: 520, height: 132), radius: 18, color: cardSoft, stroke: NSColor.white.withAlphaComponent(0.12))
-            rounded(CGRect(x: 108, y: y + 30, width: 72, height: 72), radius: 18, color: card)
-            symbol(item.0, x: 128, y: y + 50, size: 32)
-            text(item.1, x: 204, y: y + 31, size: 24, weight: .semibold)
-            text(item.2, x: 204, y: y + 72, size: 16, color: muted)
+            let y = 220 + CGFloat(index) * 145
+            rounded(CGRect(x: 82, y: y, width: 520, height: 112), radius: 18, color: cardSoft, stroke: NSColor.white.withAlphaComponent(0.12))
+            rounded(CGRect(x: 106, y: y + 20, width: 72, height: 72), radius: 18, color: card)
+            symbol(item.0, x: 126, y: y + 40, size: 32)
+            text(item.1, x: 202, y: y + 22, size: 22, weight: .semibold)
+            text(item.2, x: 202, y: y + 60, size: 15, color: muted)
         }
 
         var state = UIState(preset: 1, intensity: 0.46, paper: true, focus: false)

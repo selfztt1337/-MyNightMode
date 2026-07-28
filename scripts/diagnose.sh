@@ -1,7 +1,7 @@
 #!/bin/zsh
 set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-APP="$ROOT/dist/MyNightMode.app"
+APP="$ROOT/dist/NightMode.app"
 echo "=== macOS ==="
 sw_vers
 echo "=== developer tools ==="
@@ -15,7 +15,7 @@ if [[ -d "$APP" ]]; then
   plutil -p "$APP/Contents/Info.plist" 2>&1
   echo "--- executable ---"
   ls -la "$APP/Contents/MacOS" 2>&1
-  file "$APP/Contents/MacOS/MyNightMode" 2>&1
+  file "$APP/Contents/MacOS/NightMode" 2>&1
   echo "--- signature ---"
   codesign -dvvv "$APP" 2>&1
   codesign --verify --deep --strict --verbose=4 "$APP" 2>&1

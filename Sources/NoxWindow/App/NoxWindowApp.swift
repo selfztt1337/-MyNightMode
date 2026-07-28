@@ -1,34 +1,64 @@
 import SwiftUI
+import AppKit
 
 @main
-struct MyNightModeApp: App {
+struct NightModeApp: App {
+    @NSApplicationDelegateAdaptor(NightModeAppDelegate.self) private var appDelegate
     @StateObject private var model = AppModel()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(model)
-                .preferredColorScheme(.dark)
                 .task { model.start() }
         }
         .windowStyle(.hiddenTitleBar)
-        .defaultSize(width: 520, height: 750)
+        .defaultSize(width: 520, height: 820)
+        .windowResizability(.contentSize)
         .commands {
             CommandGroup(replacing: .newItem) { }
-            CommandMenu("MyNightMode") {
+            CommandMenu("NightMode") {
                 Button(model.isEnabled ? "Выключить" : "Включить") { model.toggle() }
             }
         }
 
-        MenuBarExtra("MyNightMode", systemImage: model.isEnabled ? "circle.lefthalf.filled" : "circle") {
+        MenuBarExtra("NightMode", systemImage: model.isEnabled ? "circle.lefthalf.filled" : "circle") {
             MenuBarView().environmentObject(model)
         }
         .menuBarExtraStyle(.window)
 
         Settings {
             SettingsView(model: model)
-                .preferredColorScheme(.dark)
         }
-        .defaultSize(width: 720, height: 680)
+        .defaultSize(width: 780, height: 820)
+        .windowResizability(.contentSize)
+    }
+}
+
+@MainActor
+final class NightModeAppDelegate: NSObject, NSApplicationDelegate {
+    private let iconAppearanceController = AppIconAppearanceController()
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        iconAppearanceController.start()
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        iconAppearanceController.stop()
+    }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
+    }
+
+    func applicationShouldHandleReopen(
+        _ sender: NSApplication,
+        hasVisibleWindows flag: Bool
+    ) -> Bool {
+        if !flag {
+            sender.windows.first { $0.canBecomeMain }?.makeKeyAndOrderFront(nil)
+        }
+        sender.activate(ignoringOtherApps: true)
+        return true
     }
 }

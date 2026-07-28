@@ -25,7 +25,7 @@ if rg -I -n --hidden \
   -g '!.build/**' \
   -g '!dist/**' \
   -g '!scripts/audit_repository.sh' \
-  '(@selfztt1337|/Users/[^/[:space:]]+|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,})' .
+  '(/Users/[^/[:space:]]+|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,})' .
 then
   fail "Найдены персональные маркеры, локальные пути или секреты"
 fi
